@@ -1,0 +1,6 @@
+@PriceSignal_HostAddress = http://localhost:5125
+
+GET {{PriceSignal_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
