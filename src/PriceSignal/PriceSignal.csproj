@@ -9,9 +9,21 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="HotChocolate.AspNetCore" Version="13.9.4" />
+        <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="13.9.4" />
+        <PackageReference Include="HotChocolate.Data.EntityFramework" Version="13.9.4" />
+        <PackageReference Include="HotChocolate.Types.Analyzers" Version="13.9.4" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0"/>
         <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="8.0.5" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="GraphQL\Mutations\" />
     </ItemGroup>
 
 </Project>

@@ -4,6 +4,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5F90A046-13A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PriceSignal", "src\PriceSignal\PriceSignal.csproj", "{8B57A13C-CB1D-43CB-ACE6-3168E11B2033}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "src\Infrastructure\Infrastructure.csproj", "{3975823E-F9E0-4CCD-AB97-B62EFE31CF3B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "src\Domain\Domain.csproj", "{D9DF811E-DA9E-47E7-832E-9E842C6000DC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{676DAC15-E9AB-4963-83FD-D1C15E79AD07}"
+	ProjectSection(SolutionItems) = preProject
+		compose.yaml = compose.yaml
+		Dockerfile = Dockerfile
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "src\Application\Application.csproj", "{3B4F838B-D853-4A71-A230-376AA8C070EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,8 +26,24 @@ Global
 		{8B57A13C-CB1D-43CB-ACE6-3168E11B2033}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B57A13C-CB1D-43CB-ACE6-3168E11B2033}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B57A13C-CB1D-43CB-ACE6-3168E11B2033}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3975823E-F9E0-4CCD-AB97-B62EFE31CF3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3975823E-F9E0-4CCD-AB97-B62EFE31CF3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3975823E-F9E0-4CCD-AB97-B62EFE31CF3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3975823E-F9E0-4CCD-AB97-B62EFE31CF3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9DF811E-DA9E-47E7-832E-9E842C6000DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9DF811E-DA9E-47E7-832E-9E842C6000DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9DF811E-DA9E-47E7-832E-9E842C6000DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9DF811E-DA9E-47E7-832E-9E842C6000DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B4F838B-D853-4A71-A230-376AA8C070EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B4F838B-D853-4A71-A230-376AA8C070EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B4F838B-D853-4A71-A230-376AA8C070EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B4F838B-D853-4A71-A230-376AA8C070EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{8B57A13C-CB1D-43CB-ACE6-3168E11B2033} = {5F90A046-13A6-420E-8562-EC26DDB1E230}
+		{3975823E-F9E0-4CCD-AB97-B62EFE31CF3B} = {5F90A046-13A6-420E-8562-EC26DDB1E230}
+		{D9DF811E-DA9E-47E7-832E-9E842C6000DC} = {5F90A046-13A6-420E-8562-EC26DDB1E230}
+		{676DAC15-E9AB-4963-83FD-D1C15E79AD07} = {5F90A046-13A6-420E-8562-EC26DDB1E230}
+		{3B4F838B-D853-4A71-A230-376AA8C070EE} = {5F90A046-13A6-420E-8562-EC26DDB1E230}
 	EndGlobalSection
 EndGlobal

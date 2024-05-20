@@ -7,7 +7,7 @@ function App() {
   const [count, setCount] = useState(0)
     
     const testFetch = async () => {
-        const response = await fetch('/api/weatherforecast')
+        const response = await fetch('/api/weatherforecast/2022-04-01')
         const data = await response.json()
         console.log(data)
     }

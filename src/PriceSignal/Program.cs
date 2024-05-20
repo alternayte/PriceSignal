@@ -1,3 +1,9 @@
+using HotChocolate.Types.Pagination;
+using Infrastructure;
+using Infrastructure.Data;
+using Infrastructure.Providers.Binance;
+using PriceSignal.BackgroundServices;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -20,7 +26,39 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services
+    .AddInfrastructure(builder.Configuration)
+    .AddGraphQLServer()
+    .SetPagingOptions(new PagingOptions
+    {
+        MaxPageSize = 100,
+        IncludeTotalCount = true,
+        DefaultPageSize = 10,
+        RequirePagingBoundaries = true
+        
+    })
+    .InitializeOnStartup()
+    .AddAuthorization()
+    .RegisterDbContext<AppDbContext>(DbContextKind.Pooled)
+    .AddQueryType()
+    .AddTypes()
+    .AddFiltering()
+    .AddSorting()
+    .AddProjections();
+
+if (builder.Configuration.GetSection("Binance:Enabled").Get<bool>())
+{
+    builder.Services.AddHostedService<BinancePriceFetcherService>();
+}
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<AppDbContext>();
+    DbSeeder.Initialize(context);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -39,7 +77,9 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-app.MapGet("/weatherforecast", () =>
+var g = app.MapGroup("/api");
+
+g.MapGet("/weatherforecast", () =>
     {
         var forecast = Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
@@ -54,10 +94,36 @@ app.MapGet("/weatherforecast", () =>
     .WithName("GetWeatherForecast")
     .WithOpenApi();
 
+g.MapGet("/weatherforecast/{date}", (string date) =>
+    {
+        var parsedDate = DateOnly.Parse(date);
+        var rng = new Random();
+        var forecast = new WeatherForecast
+        (
+            parsedDate,
+            rng.Next(-20, 55),
+            summaries[rng.Next(summaries.Length)]
+        );
+        return forecast;
+    })
+    .WithName("GetWeatherForecastByDate")
+    .WithOpenApi();
+
+g.MapGet("/exchange-info", async (IBinanceApi binanceApi) =>
+    {
+        var exchangeInfo = await binanceApi.GetExchangeInfoAsync();
+        var symbols = exchangeInfo?.Content?.symbols.Take(10);
+        return symbols;
+    })
+    .WithName("GetExchangeInfo")
+    .WithOpenApi();
+
 app.UseSpa(spa =>
 {
     spa.Options.SourcePath = "wwwroot";
 });
+
+app.MapGraphQL();
 
 app.Run();
 
