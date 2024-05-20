@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{676DAC
 	ProjectSection(SolutionItems) = preProject
 		compose.yaml = compose.yaml
 		Dockerfile = Dockerfile
+		TimescaleDB.Dockerfile = TimescaleDB.Dockerfile
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "src\Application\Application.csproj", "{3B4F838B-D853-4A71-A230-376AA8C070EE}"

@@ -41,6 +41,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+#  temp-db:
+#    image: nayth/timescaledb:15
+#    environment:
+#      - POSTGRES_DB=price_signal
+#      - POSTGRES_USER=postgres
+#      - POSTGRES_PASSWORD=example
+#    ports:
+#      - 5433:5432
 volumes:
   db-data:
 # secrets:
