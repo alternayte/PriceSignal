@@ -25,7 +25,7 @@ services:
 #       db:
 #         condition: service_healthy
   db:
-    image: timescale/timescaledb:latest-pg15
+    image: timescale/timescaledb-ha:pg15
     restart: always
     user: postgres
     volumes:

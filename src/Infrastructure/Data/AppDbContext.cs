@@ -11,6 +11,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Exchange> Exchanges => Set<Exchange>();
     public DbSet<Instrument> Instruments => Set<Instrument>();
     public DbSet<InstrumentPrice> InstrumentPrices => Set<InstrumentPrice>();
+    public DbSet<Price> Prices => Set<Price>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

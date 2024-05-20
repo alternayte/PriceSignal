@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations.PostgreSQL
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240520000540_Initial")]
-    partial class Initial
+    [Migration("20240520014504_HyperTableConfiguration")]
+    partial class HyperTableConfiguration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -141,19 +141,6 @@ namespace Infrastructure.Migrations.PostgreSQL
 
             modelBuilder.Entity("Domain.Models.Instruments.InstrumentPrice", b =>
                 {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<Guid>("EntityId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("entity_id")
-                        .HasDefaultValueSql("uuid_generate_v4()");
-
                     b.Property<long>("ExchangeId")
                         .HasColumnType("bigint")
                         .HasColumnName("exchange_id");
@@ -180,9 +167,6 @@ namespace Infrastructure.Migrations.PostgreSQL
                     b.Property<double>("Volume")
                         .HasColumnType("double precision")
                         .HasColumnName("volume");
-
-                    b.HasKey("Id")
-                        .HasName("pk_instrument_prices");
 
                     b.HasIndex("ExchangeId")
                         .HasDatabaseName("ix_instrument_prices_exchange_id");

@@ -2,6 +2,7 @@
 using Application.Common.Interfaces;
 using Domain.Models.Instruments;
 using Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 
 namespace PriceSignal.BackgroundServices;
@@ -64,19 +65,26 @@ public class BinancePriceFetcherService(
             var volume = token["v"]?.ToObject<decimal>();
 
             if (symbol == null || price == null) continue;
-            await dbContext.InstrumentPrices.AddAsync(new InstrumentPrice
-            {
-                Symbol = symbol,
-                Price = (decimal) price,
-                Quantity = quantity ?? 0m,
-                Volume = volume ?? 0m,
-                Timestamp = timeProvider.GetUtcNow(),
-                Exchange = exchange
-            });
+            // await dbContext.InstrumentPrices.AddAsync(new InstrumentPrice
+            // {
+            //     Symbol = symbol,
+            //     Price = (decimal) price,
+            //     Quantity = quantity ?? 0m,
+            //     Volume = volume ?? 0m,
+            //     Timestamp = timeProvider.GetUtcNow(),
+            //     Exchange = exchange
+            // });
+
+            await dbContext.Database.ExecuteSqlAsync(
+                $"""
+                 INSERT INTO instrument_prices (symbol, price, volume, quantity, timestamp, exchange_id)
+                 VALUES ({symbol}, {price}, {volume}, {quantity}, {timeProvider.GetUtcNow()}, {exchange.Id})
+                 """);
             
             logger.LogInformation($"Received price update from Binance: {symbol} = {price}");
         }
+        
 
-        await dbContext.SaveChangesAsync();
+        // await dbContext.SaveChangesAsync();
     }
 }

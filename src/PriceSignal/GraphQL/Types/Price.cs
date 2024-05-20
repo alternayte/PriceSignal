@@ -1,0 +1,19 @@
+using Domain.Models.Instruments;
+
+namespace PriceSignal.GraphQL.Types;
+
+public class PriceType : ObjectType<Price>
+{
+    protected override void Configure(IObjectTypeDescriptor<Price> descriptor)
+    {
+        descriptor.BindFieldsExplicitly();
+        descriptor.Field(x => x.Symbol).Type<NonNullType<StringType>>();
+        descriptor.Field(x => x.Open).Type<NonNullType<DecimalType>>();
+        descriptor.Field(x => x.High).Type<NonNullType<DecimalType>>();
+        descriptor.Field(x => x.Low).Type<NonNullType<DecimalType>>();
+        descriptor.Field(x => x.Close).Type<NonNullType<DecimalType>>();
+        descriptor.Field(x => x.Volume).Type<DecimalType>();
+        descriptor.Field(x => x.Bucket).Type<NonNullType<DateTimeType>>();
+        descriptor.Field(x => x.Exchange).Type<NonNullType<ExchangeType>>();
+    }
+}

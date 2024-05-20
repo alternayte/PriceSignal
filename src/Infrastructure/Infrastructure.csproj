@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Folder Include="Migrations\PostgreSQL\" />
       <Folder Include="Providers\DexScreener\" />
     </ItemGroup>
 

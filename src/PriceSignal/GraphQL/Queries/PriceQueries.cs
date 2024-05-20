@@ -4,14 +4,14 @@ using Infrastructure.Data;
 namespace PriceSignal.GraphQL.Queries;
 
 [QueryType]
-public class InstrumentPriceQueries
+public class PriceQueries
 {
     [UseOffsetPaging(IncludeTotalCount = true)]
     [UseProjection]
     [UseFiltering]
     [UseSorting]
-    public IQueryable<InstrumentPrice> GetInstrumentPrices(AppDbContext dbContext)
+    public IQueryable<Price> GetPrices(AppDbContext dbContext)
     {
-        return dbContext.InstrumentPrices.AsQueryable();
+        return dbContext.Prices.AsQueryable();
     }
 }

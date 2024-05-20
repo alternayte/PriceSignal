@@ -2,7 +2,7 @@ using Domain.Models.Exchanges;
 
 namespace Domain.Models.Instruments;
 
-public class InstrumentPrice : BaseEntity
+public class InstrumentPrice : EventEntity
 {
     public required string Symbol { get; init; }
     public  required decimal Price { get; init; }

@@ -37,19 +37,15 @@ namespace Infrastructure.Migrations.PostgreSQL
                 name: "instrument_prices",
                 columns: table => new
                 {
-                    id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     symbol = table.Column<string>(type: "text", nullable: false),
                     price = table.Column<double>(type: "double precision", nullable: false),
                     volume = table.Column<double>(type: "double precision", nullable: false),
                     quantity = table.Column<double>(type: "double precision", nullable: false),
                     timestamp = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
-                    exchange_id = table.Column<long>(type: "bigint", nullable: false),
-                    entity_id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "uuid_generate_v4()")
+                    exchange_id = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_instrument_prices", x => x.id);
                     table.ForeignKey(
                         name: "fk_instrument_prices_exchanges_exchange_id",
                         column: x => x.exchange_id,

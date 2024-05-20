@@ -8,9 +8,6 @@ public class InstrumentPriceConfigurations : IEntityTypeConfiguration<Instrument
 {
     public void Configure(EntityTypeBuilder<InstrumentPrice> builder)
     {
-        builder.Property(ip=> ip.EntityId)
-            .HasDefaultValueSql("uuid_generate_v4()");
-        
         builder.Property(ip => ip.Price)
             .HasColumnType("double precision")
             .IsRequired();
@@ -26,6 +23,7 @@ public class InstrumentPriceConfigurations : IEntityTypeConfiguration<Instrument
         builder.Property(ip => ip.Timestamp)
             .HasDefaultValueSql("now()")
             .IsRequired();
-        
+
+        builder.HasNoKey();
     }
 }
