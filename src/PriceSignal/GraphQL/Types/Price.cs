@@ -17,3 +17,19 @@ public class PriceType : ObjectType<Price>
         descriptor.Field(x => x.Exchange).Type<NonNullType<ExchangeType>>();
     }
 }
+
+public enum PriceInterval
+{
+    OneMin,
+    FiveMin
+}
+
+public class PriceIntervalType : EnumType<PriceInterval>
+{
+    protected override void Configure(IEnumTypeDescriptor<PriceInterval> descriptor)
+    {
+        descriptor.BindValuesExplicitly();
+        descriptor.Value(PriceInterval.OneMin).Name("ONE_MIN");
+        descriptor.Value(PriceInterval.FiveMin).Name("FIVE_MIN");
+    }
+}

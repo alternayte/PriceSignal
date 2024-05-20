@@ -2,6 +2,7 @@ using System.Net.WebSockets;
 using System.Reactive.Linq;
 using System.Text;
 using Application.Common.Interfaces;
+using Infrastructure.Channels;
 using Microsoft.Extensions.Logging;
 using Websocket.Client;
 
@@ -41,7 +42,7 @@ public class WebsocketClientProvider(string url, ILogger<WebsocketClientProvider
 
         async void OnNext(string message)
         {
-            logger.LogInformation("Message received: {Message}", message);
+            //logger.LogInformation("Message received: {Message}", message);
             await onMessageReceived(message);
         }
     }

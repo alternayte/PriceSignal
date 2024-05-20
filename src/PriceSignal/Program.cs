@@ -49,6 +49,7 @@ builder.Services
 if (builder.Configuration.GetSection("Binance:Enabled").Get<bool>())
 {
     builder.Services.AddHostedService<BinancePriceFetcherService>();
+    builder.Services.AddHostedService<BinanceProcessingService>();
 }
 
 var app = builder.Build();

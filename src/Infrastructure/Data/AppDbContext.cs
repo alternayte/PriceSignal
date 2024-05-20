@@ -2,6 +2,7 @@ using System.Reflection;
 using Application.Common.Interfaces;
 using Domain.Models.Exchanges;
 using Domain.Models.Instruments;
+using Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
@@ -11,12 +12,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Exchange> Exchanges => Set<Exchange>();
     public DbSet<Instrument> Instruments => Set<Instrument>();
     public DbSet<InstrumentPrice> InstrumentPrices => Set<InstrumentPrice>();
-    public DbSet<Price> Prices => Set<Price>();
+    public DbSet<OneMinCandle> OneMinCandle => Set<OneMinCandle>();
+    public DbSet<FiveMinCandle> FiveMinCandle => Set<FiveMinCandle>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.HasPostgresExtension("uuid-ossp");
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        
+        // builder.Entity<OneMinCandle>().HasNoKey().ToView("one_min_candle");
+        // builder.Entity<FiveMinCandle>().HasNoKey().ToView("five_min_candle");
+        //builder.Entity<FiveMinCandle>().ToView("five_min_candle");
         
         base.OnModelCreating(builder);
     }
