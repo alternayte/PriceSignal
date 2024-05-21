@@ -9,6 +9,8 @@
 # https://github.com/docker/awesome-compose
 services:
   server:
+    platform: linux/amd64
+    image: nayth/price-signal-graph:latest
     build:
       context: .
       target: final

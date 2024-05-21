@@ -1,4 +1,5 @@
 using Domain.Models.Exchanges;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
 
@@ -6,7 +7,8 @@ public static class DbSeeder
 {
     public static void Initialize(AppDbContext context)
     {
-        context.Database.EnsureCreated();
+        
+        context.Database.Migrate();
         
         if (context.Exchanges.Any())
         {

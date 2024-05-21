@@ -24,7 +24,6 @@
 
     <ItemGroup>
       <Folder Include="GraphQL\Mutations\" />
-      <Folder Include="GraphQL\Subscriptions\" />
     </ItemGroup>
 
 </Project>

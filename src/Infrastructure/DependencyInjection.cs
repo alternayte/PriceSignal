@@ -14,14 +14,25 @@ namespace Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration,
+        bool isDevelopment)
     {
         services.AddSingleton(TimeProvider.System);
-
-        services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
-        services.AddDbContextFactory<AppDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("PriceSignalDB")).UseSnakeCaseNamingConvention());
         
+        if (isDevelopment)
+        {
+            services.AddDbContextFactory<AppDbContext>(options =>
+                options.UseNpgsql(configuration.GetConnectionString("PriceSignalDB")).UseSnakeCaseNamingConvention());
+        }
+        else
+        {
+            var postgresUri = File.ReadAllText("/app/secrets/uri");
+            var connectionString = ConvertToNpgsqlConnectionString(postgresUri);
+            services.AddDbContextFactory<AppDbContext>(options =>
+                options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
+        }
+        
+        services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
 
         var binanceWebsocketUrl = configuration.GetSection("Binance:WebsocketUrl").Value ?? throw new InvalidOperationException();
 
@@ -35,5 +46,18 @@ public static class DependencyInjection
             .ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration.GetSection("Binance:ApiUrl").Value ?? throw new InvalidOperationException()));
 
         return services;
+    }
+    
+    public static string ConvertToNpgsqlConnectionString(string postgresUri)
+    {
+        var uri = new Uri(postgresUri);
+
+        string host = uri.Host;
+        int port = uri.Port;
+        string database = uri.AbsolutePath.Trim('/');
+        string username = uri.UserInfo.Split(':')[0];
+        string password = uri.UserInfo.Split(':')[1];
+
+        return $"Host={host};Port={port};Database={database};Username={username};Password={password}";
     }
 }

@@ -7,7 +7,7 @@ namespace PriceSignal.GraphQL.Queries;
 [QueryType]
 public class PriceQueries
 {
-    [UseOffsetPaging(IncludeTotalCount = true)]
+    [UsePaging(IncludeTotalCount = true)]
     [UseProjection]
     [UseFiltering]
     [UseSorting]

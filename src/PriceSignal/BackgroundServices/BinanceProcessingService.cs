@@ -1,7 +1,11 @@
+using Domain.Models.Exchanges;
+using Domain.Models.Instruments;
+using HotChocolate.Subscriptions;
 using Infrastructure.Channels;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
+using PriceSignal.GraphQL.Subscriptions;
 
 namespace PriceSignal.BackgroundServices;
 
@@ -25,6 +29,8 @@ public class BinanceProcessingService(
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var topicEventSender = scope.ServiceProvider.GetRequiredService<ITopicEventSender>();
+
         var exchange = dbContext.Exchanges.First(e => e.Name == "Binance");
         
         var jsonArray = JArray.Parse(message);
@@ -44,7 +50,15 @@ public class BinanceProcessingService(
             var exchangeId = exchange.Id;
             var values = $"('{symbol}', {price}, {volume ?? 0m}, {quantity ?? 0m}, '{timestamp:s}', {exchangeId})";
             valuesList.Add(values);
-            
+            await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), new InstrumentPrice
+            {
+                Symbol = symbol,
+                Price = price.Value, 
+                Volume = volume ?? 0m,
+                Quantity = quantity ?? 0m,
+                Timestamp = timestamp,
+            });
+
         }
 
         if (valuesList.Any())
@@ -57,6 +71,7 @@ public class BinanceProcessingService(
                  INSERT INTO instrument_prices (symbol, price, volume, quantity, timestamp, exchange_id)
                  VALUES {values}
                  """);
+            
         }
         
     }

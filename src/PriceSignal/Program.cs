@@ -27,7 +27,8 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services
-    .AddInfrastructure(builder.Configuration)
+    .AddMemoryCache()
+    .AddInfrastructure(builder.Configuration, builder.Environment.IsDevelopment())
     .AddGraphQLServer()
     .SetPagingOptions(new PagingOptions
     {
@@ -41,6 +42,8 @@ builder.Services
     .AddAuthorization()
     .RegisterDbContext<AppDbContext>(DbContextKind.Pooled)
     .AddQueryType()
+    .AddSubscriptionType()
+    .AddInMemorySubscriptions()
     .AddTypes()
     .AddFiltering()
     .AddSorting()
@@ -58,7 +61,11 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<AppDbContext>();
-    DbSeeder.Initialize(context);
+    if (!builder.Environment.IsDevelopment())
+    {
+        DbSeeder.Initialize(context);
+    }
+    
 }
 
 // Configure the HTTP request pipeline.
@@ -72,6 +79,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseSpaStaticFiles();
 app.UseCors();
+
 
 var summaries = new[]
 {
@@ -124,6 +132,7 @@ app.UseSpa(spa =>
     spa.Options.SourcePath = "wwwroot";
 });
 
+app.UseWebSockets();
 app.MapGraphQL();
 
 app.Run();

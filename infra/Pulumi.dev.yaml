@@ -1,0 +1,3 @@
+config:
+  PriceSignal.IaC:namespace: default
+  PriceSignal.IaC:replicas: "1"

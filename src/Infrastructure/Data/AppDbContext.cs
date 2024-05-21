@@ -20,10 +20,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         builder.HasPostgresExtension("uuid-ossp");
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         
-        // builder.Entity<OneMinCandle>().HasNoKey().ToView("one_min_candle");
-        // builder.Entity<FiveMinCandle>().HasNoKey().ToView("five_min_candle");
-        //builder.Entity<FiveMinCandle>().ToView("five_min_candle");
-        
         base.OnModelCreating(builder);
     }
     
