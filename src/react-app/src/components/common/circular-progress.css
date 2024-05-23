@@ -1,0 +1,15 @@
+.circular-progress {
+    transform: rotate(-90deg);
+}
+
+.circular-progress-background {
+    transition: stroke-dashoffset 0.35s;
+    transform: rotate(90deg);
+    transform-origin: 50% 50%;
+}
+
+.circular-progress-bar {
+    transition: stroke-dashoffset 0.35s;
+    transform: rotate(90deg);
+    transform-origin: 50% 50%;
+}

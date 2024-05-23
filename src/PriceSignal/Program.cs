@@ -36,7 +36,7 @@ builder.Services
         IncludeTotalCount = true,
         DefaultPageSize = 10,
         RequirePagingBoundaries = true
-        
+
     })
     .InitializeOnStartup()
     .AddAuthorization()
@@ -47,7 +47,9 @@ builder.Services
     .AddTypes()
     .AddFiltering()
     .AddSorting()
-    .AddProjections();
+    .AddProjections()
+    .UseAutomaticPersistedQueryPipeline()
+    .AddInMemoryQueryStorage();
 
 if (builder.Configuration.GetSection("Binance:Enabled").Get<bool>())
 {
