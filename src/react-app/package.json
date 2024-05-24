@@ -20,6 +20,7 @@
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
     "graphql": "^16.8.1",
+    "graphql-ws": "^5.16.0",
     "klinecharts": "^9.8.8",
     "localforage": "^1.10.0",
     "lucide-react": "^0.379.0",

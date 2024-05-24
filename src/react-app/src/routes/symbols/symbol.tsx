@@ -1,7 +1,9 @@
 import { ContentLayout } from '@/components/layouts/content';
 import { PricesChart } from '@/features/prices/components/prices-chart';
 import { graphql } from '@/gql';
+import { Price } from '@/gql/graphql';
 import { useQuery } from '@apollo/client';
+import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const getPricesForSymbolQuery = graphql(`
@@ -10,10 +12,10 @@ const getPricesForSymbolQuery = graphql(`
       last: 100
       where: { symbol: { eq: $symbol } }
       # order: { bucket: DESC }
-      interval: FIVE_MIN
+      interval: ONE_MIN
     ) {
       nodes {
-        bucket
+        timestamp: bucket
         close
         high
         low
@@ -25,34 +27,86 @@ const getPricesForSymbolQuery = graphql(`
   }
 `);
 
+const subscribeToPricesForSymbol = graphql(`
+  subscription SubscribeToPricesForSymbol($symbol: String!) {
+    onPriceUpdated(symbol: $symbol) {
+      timestamp: bucket
+      close
+      high
+      low
+      open
+      symbol
+      volume
+    }
+  }
+`);
+
 export const SymbolRoute = () => {
   const params = useParams();
   const navigate = useNavigate();
   const symbol = params.symbol as string;
 
-  const { data, loading } = useQuery(getPricesForSymbolQuery, { variables: { symbol } });
+  const { data, loading, subscribeToMore } = useQuery(getPricesForSymbolQuery, { variables: { symbol } });
+
+  useEffect(() => {
+    const unsubscribe = subscribeToMore<Price>({
+      document: subscribeToPricesForSymbol,
+      variables: { symbol },
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) {
+          return {
+            prices: {
+              __typename: 'PricesConnection',
+              nodes: [{ symbol, timestamp: '', close: 0, high: 0, low: 0, open: 0, volume: 0 }],
+            },
+          };
+        }
+        // @ts-ignore
+        const newData = subscriptionData.data.onPriceUpdated;
+        const newPrice = {
+          timestamp: newData.timestamp,
+          close: newData.close,
+          high: newData.high,
+          low: newData.low,
+          open: newData.open,
+          symbol,
+          volume: newData.volume,
+        };
+        const newPrices = [...(prev?.prices?.nodes || []), newPrice];
+        return {
+          prices: {
+            __typename: 'PricesConnection',
+            nodes: newPrices,
+          },
+        };
+      },
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [symbol, subscribeToMore]);
 
   if (loading) return <p>Loading...</p>;
- 
+
   if (!data) return <p>No data</p>;
 
   const klines =
     data.prices?.nodes?.map((price) => ({
-      timestamp: price.bucket,
+      timestamp: price.timestamp,
       open: price.open,
       high: price.high,
       low: price.low,
       close: price.close,
       volume: price.volume,
     })) || [];
-  
+
   if (klines.length === 0) {
-    navigate('/')
+    navigate('/');
   }
-  
+
   return (
     <ContentLayout title={`Chart | ${symbol}`}>
-        <PricesChart key={symbol} data={klines} />
+      <PricesChart key={symbol} data={klines} />
     </ContentLayout>
   );
 };

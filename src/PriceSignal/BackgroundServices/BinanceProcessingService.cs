@@ -40,23 +40,29 @@ public class BinanceProcessingService(
         foreach (var token in jsonArray)
         {
             var symbol = token["s"]?.ToString();
-            var price = token["c"]?.ToObject<decimal>();
+            var open = token["o"]?.ToObject<decimal>();
+            var high = token["h"]?.ToObject<decimal>();
+            var low = token["l"]?.ToObject<decimal>();
+            var close = token["c"]?.ToObject<decimal>();
             var quantity = token["q"]?.ToObject<decimal>();
             var volume = token["v"]?.ToObject<decimal>();
 
-            if (symbol == null || price == null) continue;
+            if (symbol == null || close == null) continue;
             
             var timestamp = timeProvider.GetUtcNow();
+            var truncated = timestamp.Date.AddHours(timestamp.Hour).AddMinutes(timestamp.Minute);
             var exchangeId = exchange.Id;
-            var values = $"('{symbol}', {price}, {volume ?? 0m}, {quantity ?? 0m}, '{timestamp:s}', {exchangeId})";
+            var values = $"('{symbol}', {close}, {volume ?? 0m}, {quantity ?? 0m}, '{timestamp:s}', {exchangeId})";
             valuesList.Add(values);
-            await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), new InstrumentPrice
+            await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), new Price
             {
                 Symbol = symbol,
-                Price = price.Value, 
+                Open = open ?? 0m,
+                High = high ?? 0m,
+                Low = low ?? 0m,
+                Close = close ?? 0m,
                 Volume = volume ?? 0m,
-                Quantity = quantity ?? 0m,
-                Timestamp = timestamp,
+                Bucket = truncated,
             });
 
         }

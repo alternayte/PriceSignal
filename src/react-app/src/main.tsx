@@ -2,11 +2,44 @@ import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
-import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
+import { ApolloClient, InMemoryCache, ApolloProvider, HttpLink, split } from '@apollo/client';
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
+import { createClient } from 'graphql-ws';
+import { getMainDefinition } from '@apollo/client/utilities';
+
+const httpLink = new HttpLink({
+    uri: '/graphql',
+});
+
+const wsLink = new GraphQLWsLink(
+    createClient({
+        //url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/graphql`,
+        url: 'ws://localhost:5125/graphql',
+    }),
+);
+
+const splitLink = split(
+    ({ query }) => {
+        const definition = getMainDefinition(query);
+        return (
+            definition.kind === 'OperationDefinition' &&
+            definition.operation === 'subscription'
+        );
+    },
+    wsLink,
+    httpLink,
+);
 
 const client = new ApolloClient({
-  uri: '/graphql',
-  cache: new InMemoryCache(),
+  link: splitLink,
+  cache: new InMemoryCache({
+    // typePolicies: {
+    //   Price: {
+    //     keyFields: ['symbol', 'bucket'],
+    //   },
+    // },
+  }),
+    
 });
 
 const AppProvider = ({ children }: { children: React.ReactNode }) => {
