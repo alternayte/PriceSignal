@@ -17,6 +17,9 @@ public class PriceQueries
         {
             PriceInterval.OneMin => MapToPrice(dbContext.OneMinCandle.AsQueryable()),
             PriceInterval.FiveMin => MapToPrice(dbContext.FiveMinCandle.AsQueryable()),
+            PriceInterval.TenMin => MapToPrice(dbContext.TenMinCandle.AsQueryable()),
+            PriceInterval.FifteenMin => MapToPrice(dbContext.FifteenMinCandle.AsQueryable()),
+            PriceInterval.OneHour => MapToPrice(dbContext.OneHourCandle.AsQueryable()),
             _ => MapToPrice(dbContext.OneMinCandle.AsQueryable())
         };
     }

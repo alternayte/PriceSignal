@@ -20,7 +20,7 @@ namespace Infrastructure.Migrations.PostgreSQL
                                      timescaledb.compress_segmentby = 'symbol, exchange_id'
                                  );
                                  
-                                 SELECT add_compression_policy('instrument_prices', INTERVAL '2 weeks');
+                                 SELECT add_compression_policy('instrument_prices', INTERVAL '1 week');
                                  
                                  """);
             
@@ -35,7 +35,7 @@ namespace Infrastructure.Migrations.PostgreSQL
                                         first(price, timestamp) AS open,
                                         max(price) AS high,
                                         min(price) AS low,
-                                        last(price, timestamp) AS close,
+                                        last(close, bucket) AS close,
                                         sum(volume) AS volume
                                     FROM instrument_prices
                                     GROUP BY symbol, exchange_id, bucket;
@@ -48,12 +48,12 @@ namespace Infrastructure.Migrations.PostgreSQL
                                         symbol,
                                         exchange_id,
                                         time_bucket('5 minutes', timestamp) AS bucket,
-                                        first(price, timestamp) AS open,
-                                        max(price) AS high,
-                                        min(price) AS low,
-                                        last(price, timestamp) AS close,
+                                        first(open, bucket) AS open,
+                                        max(high) AS high,
+                                        min(low) AS low,
+                                        last(close, bucket) AS close,
                                         sum(volume) AS volume
-                                    FROM instrument_prices
+                                    FROM one_min_candle
                                     GROUP BY symbol, exchange_id, bucket;
                                  """,true);
             
@@ -64,12 +64,12 @@ namespace Infrastructure.Migrations.PostgreSQL
                                         symbol,
                                         exchange_id,
                                         time_bucket('10 minutes', timestamp) AS bucket,
-                                        first(price, timestamp) AS open,
-                                        max(price) AS high,
-                                        min(price) AS low,
-                                        last(price, timestamp) AS close,
-                                        sum(volume) AS volume
-                                    FROM instrument_prices
+                                         first(open, bucket) AS open,
+                                         max(high) AS high,
+                                         min(low) AS low,
+                                         last(close, bucket) AS close,
+                                         sum(volume) AS volume
+                                    FROM five_min_candle
                                     GROUP BY symbol, exchange_id, bucket;
                                  """,true);
             
@@ -80,12 +80,12 @@ namespace Infrastructure.Migrations.PostgreSQL
                                         symbol,
                                         exchange_id,
                                         time_bucket('15 minutes', timestamp) AS bucket,
-                                        first(price, timestamp) AS open,
-                                        max(price) AS high,
-                                        min(price) AS low,
-                                        last(price, timestamp) AS close,
-                                        sum(volume) AS volume
-                                    FROM instrument_prices
+                                         first(open, bucket) AS open,
+                                         max(high) AS high,
+                                         min(low) AS low,
+                                         last(close, bucket) AS close,
+                                         sum(volume) AS volume
+                                    FROM ten_min_candle
                                     GROUP BY symbol, exchange_id, bucket;
                                  """,true);
             
@@ -96,32 +96,32 @@ namespace Infrastructure.Migrations.PostgreSQL
                                         symbol,
                                         exchange_id,
                                         time_bucket('1 hour', timestamp) AS bucket,
-                                        first(price, timestamp) AS open,
-                                        max(price) AS high,
-                                        min(price) AS low,
-                                        last(price, timestamp) AS close,
-                                        sum(volume) AS volume
-                                    FROM instrument_prices
+                                         first(open, bucket) AS open,
+                                         max(high) AS high,
+                                         min(low) AS low,
+                                         last(close, bucket) AS close,
+                                         sum(volume) AS volume
+                                    FROM fifteen_min_candle
                                     GROUP BY symbol, exchange_id, bucket;
                                  """,true);
             
             migrationBuilder.Sql("""
                                  SELECT add_continuous_aggregate_policy('one_min_candle', 
-                                 start_offset => INTERVAL '1 day', 
+                                 start_offset => INTERVAL '1 hour', 
                                  end_offset => INTERVAL '1 minute', 
                                  schedule_interval => INTERVAL '1 minute');
                                  """);
             
             migrationBuilder.Sql("""
                                  SELECT add_continuous_aggregate_policy('five_min_candle',
-                                 start_offset => INTERVAL '1 day',
+                                 start_offset => INTERVAL '1 hour',
                                  end_offset => INTERVAL '5 minutes',
                                  schedule_interval => INTERVAL '5 minutes');
                                  """);
             
             migrationBuilder.Sql("""
                                  SELECT add_continuous_aggregate_policy('ten_min_candle',
-                                 start_offset => INTERVAL '1 day',
+                                 start_offset => INTERVAL '2 hours',
                                  end_offset => INTERVAL '10 minutes',
                                  schedule_interval => INTERVAL '10 minutes');
                                  """);
@@ -139,11 +139,14 @@ namespace Infrastructure.Migrations.PostgreSQL
                                  end_offset => INTERVAL '1 hour',
                                  schedule_interval => INTERVAL '1 hour');
                                  """);
+            
+            migrationBuilder.Sql("SELECT add_retention_policy('instrument_prices', INTERVAL '2 weeks');");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("SELECT remove_retention_policy('instrument_prices');");
             migrationBuilder.Sql("DROP INDEX symbol_exchange_timestamp_idx;");
             migrationBuilder.Sql("DROP MATERIALIZED VIEW one_min_candle;");
             migrationBuilder.Sql("DROP MATERIALIZED VIEW five_min_candle;");

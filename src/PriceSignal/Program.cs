@@ -1,4 +1,5 @@
 using HotChocolate.Types.Pagination;
+using HotChocolate.Utilities;
 using Infrastructure;
 using Infrastructure.Data;
 using Infrastructure.Providers.Binance;
@@ -30,9 +31,12 @@ builder.Services
     .AddMemoryCache()
     .AddInfrastructure(builder.Configuration, builder.Environment.IsDevelopment())
     .AddGraphQLServer()
+    .AddType(new UuidType('D'))
+    .AddTypeConverter<Guid,string>(from => from.ToString("D"))
+    .AddTypeConverter<string,Guid>(Guid.Parse)
     .SetPagingOptions(new PagingOptions
     {
-        MaxPageSize = 100,
+        MaxPageSize = 500,
         IncludeTotalCount = true,
         DefaultPageSize = 10,
         RequirePagingBoundaries = true
@@ -42,6 +46,7 @@ builder.Services
     .AddAuthorization()
     .RegisterDbContext<AppDbContext>(DbContextKind.Pooled)
     .AddQueryType()
+    .AddMutationType()
     .AddSubscriptionType()
     .AddInMemorySubscriptions()
     .AddTypes()
@@ -53,7 +58,9 @@ builder.Services
 
 if (builder.Configuration.GetSection("Binance:Enabled").Get<bool>())
 {
-    builder.Services.AddHostedService<BinancePriceFetcherService>();
+    builder.Services.AddHostedService<BinancePairUpdateService>();
+    builder.Services.AddSingleton<BinancePriceFetcherService>();
+    builder.Services.AddHostedService<BinancePriceFetcherService>(provider=>provider.GetRequiredService<BinancePriceFetcherService>());
     builder.Services.AddHostedService<BinanceProcessingService>();
 }
 
@@ -122,8 +129,8 @@ g.MapGet("/weatherforecast/{date}", (string date) =>
 
 g.MapGet("/exchange-info", async (IBinanceApi binanceApi) =>
     {
-        var exchangeInfo = await binanceApi.GetExchangeInfoAsync();
-        var symbols = exchangeInfo?.Content?.symbols.Take(10);
+        var exchangeInfo = await binanceApi.GetTradingPairs();
+        var symbols = exchangeInfo.TakeLast(19);
         return symbols;
     })
     .WithName("GetExchangeInfo")

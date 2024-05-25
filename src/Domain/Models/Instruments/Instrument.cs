@@ -9,6 +9,11 @@ public class Instrument : BaseAuditableEntity
     public string? Description { get; init; }
     public required string BaseAsset { get; init; } 
     public required string QuoteAsset { get; init; }
-    public Exchange Exchange { get; init; } = default!;
+    public Exchange Exchange { get; private set; } = default!;
+    
+    public void SetExchange(Exchange exchange)
+    {
+        Exchange = exchange;
+    }
     
 }

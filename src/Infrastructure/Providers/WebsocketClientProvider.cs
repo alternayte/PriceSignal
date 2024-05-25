@@ -4,6 +4,7 @@ using System.Text;
 using Application.Common.Interfaces;
 using Infrastructure.Channels;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using Websocket.Client;
 
 namespace Infrastructure.Providers;
@@ -51,4 +52,34 @@ public class WebsocketClientProvider(string url, ILogger<WebsocketClientProvider
     {
         _client.Dispose();
     }
+    
+    public void Subscribe(IEnumerable<string> streams)
+    {
+        var request = new
+        {
+            method = "SUBSCRIBE",
+            @params = streams,
+            id = GetRequestId()
+        };
+        _client.Send(JObject.FromObject(request).ToString());
+    }
+
+    public void Unsubscribe(IEnumerable<string> streams)
+    {
+        var request = new
+        {
+            method = "UNSUBSCRIBE",
+            @params = streams,
+            id = GetRequestId()
+        };
+        _client.Send(JObject.FromObject(request).ToString());
+    }
+
+    private int GetRequestId()
+    {
+        // Ensure thread-safe incrementing of the request ID.
+        return Interlocked.Increment(ref _requestId);
+    }
+
+    private static int _requestId = 0;
 }

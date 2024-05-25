@@ -2,6 +2,7 @@ using System.Reflection;
 using Application.Common.Interfaces;
 using Domain.Models.Exchanges;
 using Domain.Models.Instruments;
+using Domain.Models.PriceRule;
 using Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,9 +12,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<Exchange> Exchanges => Set<Exchange>();
     public DbSet<Instrument> Instruments => Set<Instrument>();
+    public DbSet<PriceRule> PriceRules => Set<PriceRule>();
+    public DbSet<PriceCondition> PriceConditions => Set<PriceCondition>();
     public DbSet<InstrumentPrice> InstrumentPrices => Set<InstrumentPrice>();
     public DbSet<OneMinCandle> OneMinCandle => Set<OneMinCandle>();
     public DbSet<FiveMinCandle> FiveMinCandle => Set<FiveMinCandle>();
+    public DbSet<TenMinCandle> TenMinCandle => Set<TenMinCandle>();
+    public DbSet<FifteenMinCandle> FifteenMinCandle => Set<FifteenMinCandle>();
+    public DbSet<OneHourCandle> OneHourCandle => Set<OneHourCandle>();
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

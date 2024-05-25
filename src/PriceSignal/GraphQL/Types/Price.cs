@@ -21,7 +21,10 @@ public class PriceType : ObjectType<Price>
 public enum PriceInterval
 {
     OneMin,
-    FiveMin
+    FiveMin,
+    TenMin,
+    FifteenMin,
+    OneHour
 }
 
 public class PriceIntervalType : EnumType<PriceInterval>

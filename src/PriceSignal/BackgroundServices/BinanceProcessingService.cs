@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using Application.Common.Interfaces;
 using Domain.Models.Exchanges;
 using Domain.Models.Instruments;
 using HotChocolate.Subscriptions;
@@ -10,19 +12,41 @@ using PriceSignal.GraphQL.Subscriptions;
 namespace PriceSignal.BackgroundServices;
 
 public class BinanceProcessingService(
-    ILogger<BinancePriceFetcherService> logger,
+    ILogger<BinanceProcessingService> logger,
     IServiceProvider serviceProvider,
-    TimeProvider timeProvider
-    ) : BackgroundService
+    TimeProvider timeProvider,
+    IWebsocketClientProvider websocketClientProvider)
+    : BackgroundService
 {
+    private ConcurrentDictionary<string, Price> _currentPriceData = new();
+    private long ExchangeId { get; set; }
+    private Timer updateTimer;
+    private static SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        using var scope = serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var exchange = dbContext.Exchanges.First(e => e.Name == "Binance");
+        ExchangeId = exchange.Id;
         var channel = WebsocketChannel.SocketChannel;
         await foreach (var message in channel.Reader.ReadAllAsync(stoppingToken))
         {
             await ProcessMessageAsync(message);
         }
+    }
+
+    public override Task StartAsync(CancellationToken cancellationToken)
+    {
+        updateTimer = new(PushCurrentOhlcData, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+        return base.StartAsync(cancellationToken);
+    }
+
+    public override Task StopAsync(CancellationToken stoppingToken)
+    {
+        websocketClientProvider.Stop();
+        updateTimer?.Dispose();
+        return base.StopAsync(stoppingToken);
     }
     
     private async Task ProcessMessageAsync(string message)
@@ -30,55 +54,160 @@ public class BinanceProcessingService(
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var topicEventSender = scope.ServiceProvider.GetRequiredService<ITopicEventSender>();
-
-        var exchange = dbContext.Exchanges.First(e => e.Name == "Binance");
         
-        var jsonArray = JArray.Parse(message);
-        var valuesList = new List<string>();
+        var json = JObject.Parse(message);
+        var stream = json["stream"]?.ToString();
+        var data = json["data"];
 
-        
-        foreach (var token in jsonArray)
+        if (stream == null || data == null)
         {
-            var symbol = token["s"]?.ToString();
-            var open = token["o"]?.ToObject<decimal>();
-            var high = token["h"]?.ToObject<decimal>();
-            var low = token["l"]?.ToObject<decimal>();
-            var close = token["c"]?.ToObject<decimal>();
-            var quantity = token["q"]?.ToObject<decimal>();
-            var volume = token["v"]?.ToObject<decimal>();
+            return;
+        }
+        
+        var eventType = data["e"]?.ToString();
+        if (eventType != "aggTrade")
+        {
+            return;
+        }
+        
+        var symbol = data["s"]?.ToString();
+        var price = data["p"]?.ToObject<decimal>();
+        var quantity = data["q"]?.ToObject<decimal>();
+        var tradeTime = data["T"]?.ToObject<long>();
+        
+        if (symbol == null || price == null || quantity == null || tradeTime == null)
+        {
+            return;
+        }
 
-            if (symbol == null || close == null) continue;
-            
-            var timestamp = timeProvider.GetUtcNow();
-            var truncated = timestamp.Date.AddHours(timestamp.Hour).AddMinutes(timestamp.Minute);
-            var exchangeId = exchange.Id;
-            var values = $"('{symbol}', {close}, {volume ?? 0m}, {quantity ?? 0m}, '{timestamp:s}', {exchangeId})";
-            valuesList.Add(values);
-            await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), new Price
+        var timestamp = timeProvider.GetUtcNow();
+        var truncated = timestamp.Date.AddHours(timestamp.Hour).AddMinutes(timestamp.Minute);
+
+        if (_currentPriceData.TryGetValue(symbol, out var ohlcData))
+        {
+            // Check if the trade is in a new minute
+            if (ohlcData.Bucket.Minute != truncated.Minute)
+            {
+                // Finalize and reset OHLC data for the new minute
+                FinalizeAndResetOhlcData(symbol, ohlcData, ExchangeId, dbContext);
+
+                // Create new OHLC data for the new minute
+                ohlcData = new Price
+                {
+                    Symbol = symbol,
+                    Open = price.Value,
+                    High = price.Value,
+                    Low = price.Value,
+                    Close = price.Value,
+                    Volume = quantity.Value,
+                    Bucket = truncated,
+                    
+                };
+                _currentPriceData[symbol] = ohlcData;
+                await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), new Price
+                {
+                    Symbol = ohlcData.Symbol,
+                    Open = ohlcData.Open,
+                    High = ohlcData.High,
+                    Low = ohlcData.Low,
+                    Close = ohlcData.Close,
+                    Volume = ohlcData.Volume,
+                    Bucket = ohlcData.Bucket,
+                });
+            }
+            else
+            {
+                // Update the existing OHLC data
+                ohlcData.Update(price.Value, quantity.Value);
+                await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), new Price
+                {
+                    Symbol = ohlcData.Symbol,
+                    Open = ohlcData.Open,
+                    High = ohlcData.High,
+                    Low = ohlcData.Low,
+                    Close = ohlcData.Close,
+                    Volume = ohlcData.Volume,
+                    Bucket = ohlcData.Bucket,
+                });
+            }
+        }
+        else
+        {
+            // Create new OHLC data for the symbol
+            ohlcData = new Price
             {
                 Symbol = symbol,
-                Open = open ?? 0m,
-                High = high ?? 0m,
-                Low = low ?? 0m,
-                Close = close ?? 0m,
-                Volume = volume ?? 0m,
+                Open = price.Value,
+                High = price.Value,
+                Low = price.Value,
+                Close = price.Value,
+                Volume = quantity.Value,
                 Bucket = truncated,
+            };
+            _currentPriceData[symbol] = ohlcData;
+            await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), new Price
+            {
+                Symbol = ohlcData.Symbol,
+                Open = ohlcData.Open,
+                High = ohlcData.High,
+                Low = ohlcData.Low,
+                Close = ohlcData.Close,
+                Volume = ohlcData.Volume,
+                Bucket = ohlcData.Bucket,
             });
-
         }
+    }
 
-        if (valuesList.Any())
+    private async void PushCurrentOhlcData(object? state)
+    {
+        await _semaphore.WaitAsync();
+        try
         {
-            var values = string.Join(',', valuesList);
-#pragma warning disable EF1002
-            await dbContext.Database.ExecuteSqlRawAsync(
-#pragma warning restore EF1002
-                $"""
-                 INSERT INTO instrument_prices (symbol, price, volume, quantity, timestamp, exchange_id)
-                 VALUES {values}
-                 """);
-            
+            using var scope = serviceProvider.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            foreach (var (symbol, ohlcData) in _currentPriceData)
+            {
+                var timestamp = timeProvider.GetUtcNow();
+                var values =
+                    $"('{symbol}', {ohlcData.Close}, {ohlcData.Volume}, {ohlcData.Volume}, '{timestamp:s}', {ExchangeId})";
+                var insertQuery = $"""
+                                   INSERT INTO instrument_prices (symbol, price, volume, quantity, timestamp, exchange_id)
+                                   VALUES {values}
+                                   """;
+                await dbContext.Database.ExecuteSqlRawAsync(insertQuery);
+            }
         }
-        
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to insert OHLC data");
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+
+    private async void FinalizeAndResetOhlcData(string symbol, Price ohlcData, long exchangeId, AppDbContext dbContext)
+    {
+        var timestamp = timeProvider.GetUtcNow();
+        var values =
+            $"('{symbol}', {ohlcData.Close}, {ohlcData.Volume}, {ohlcData.Volume}, '{timestamp:s}', {exchangeId})";
+        var insertQuery = $"""
+                           INSERT INTO instrument_prices (symbol, price, volume, quantity, timestamp, exchange_id)
+                           VALUES {values}
+                           """;
+        try
+        {
+            //await dbContext.Database.ExecuteSqlRawAsync(insertQuery);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to insert OHLC data");
+        }
+
+        // Remove the finalized OHLC data
+        _currentPriceData.TryRemove(symbol, out _);
     }
 }

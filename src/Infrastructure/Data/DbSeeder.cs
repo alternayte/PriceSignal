@@ -17,8 +17,8 @@ public static class DbSeeder
         
         context.Exchanges.AddRange(
             new Exchange {Name = "Binance", Description = "Binance Exchange"},
-            new Exchange {Name = "Coinbase", Description = "Coinbase Exchange"},
-            new Exchange {Name = "Kraken", Description = "Kraken Exchange"},
+            new Exchange {Name = "Coinbase",Description = "Coinbase Exchange"},
+            new Exchange {Name = "Kraken",Description = "Kraken Exchange"},
             new Exchange {Name = "DexScreener", Description = "DexScreener Exchange"}
         );
         
