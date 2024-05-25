@@ -35,7 +35,7 @@ namespace Infrastructure.Migrations.PostgreSQL
                                         first(price, timestamp) AS open,
                                         max(price) AS high,
                                         min(price) AS low,
-                                        last(close, bucket) AS close,
+                                        last(price, timestamp) AS close,
                                         sum(volume) AS volume
                                     FROM instrument_prices
                                     GROUP BY symbol, exchange_id, bucket;
@@ -48,12 +48,12 @@ namespace Infrastructure.Migrations.PostgreSQL
                                         symbol,
                                         exchange_id,
                                         time_bucket('5 minutes', timestamp) AS bucket,
-                                        first(open, bucket) AS open,
-                                        max(high) AS high,
-                                        min(low) AS low,
-                                        last(close, bucket) AS close,
-                                        sum(volume) AS volume
-                                    FROM one_min_candle
+                                         first(price, timestamp) AS open,
+                                         max(price) AS high,
+                                         min(price) AS low,
+                                         last(price, timestamp) AS close,
+                                         sum(volume) AS volume
+                                    FROM instrument_prices
                                     GROUP BY symbol, exchange_id, bucket;
                                  """,true);
             
@@ -64,12 +64,12 @@ namespace Infrastructure.Migrations.PostgreSQL
                                         symbol,
                                         exchange_id,
                                         time_bucket('10 minutes', timestamp) AS bucket,
-                                         first(open, bucket) AS open,
-                                         max(high) AS high,
-                                         min(low) AS low,
-                                         last(close, bucket) AS close,
+                                         first(price, timestamp) AS open,
+                                         max(price) AS high,
+                                         min(price) AS low,
+                                         last(price, timestamp) AS close,
                                          sum(volume) AS volume
-                                    FROM five_min_candle
+                                    FROM instrument_prices
                                     GROUP BY symbol, exchange_id, bucket;
                                  """,true);
             
@@ -80,12 +80,12 @@ namespace Infrastructure.Migrations.PostgreSQL
                                         symbol,
                                         exchange_id,
                                         time_bucket('15 minutes', timestamp) AS bucket,
-                                         first(open, bucket) AS open,
-                                         max(high) AS high,
-                                         min(low) AS low,
-                                         last(close, bucket) AS close,
+                                         first(price, timestamp) AS open,
+                                         max(price) AS high,
+                                         min(price) AS low,
+                                         last(price, timestamp) AS close,
                                          sum(volume) AS volume
-                                    FROM ten_min_candle
+                                    FROM instrument_prices
                                     GROUP BY symbol, exchange_id, bucket;
                                  """,true);
             
@@ -96,12 +96,12 @@ namespace Infrastructure.Migrations.PostgreSQL
                                         symbol,
                                         exchange_id,
                                         time_bucket('1 hour', timestamp) AS bucket,
-                                         first(open, bucket) AS open,
-                                         max(high) AS high,
-                                         min(low) AS low,
-                                         last(close, bucket) AS close,
+                                         first(price, timestamp) AS open,
+                                         max(price) AS high,
+                                         min(price) AS low,
+                                         last(price, timestamp) AS close,
                                          sum(volume) AS volume
-                                    FROM fifteen_min_candle
+                                    FROM instrument_prices
                                     GROUP BY symbol, exchange_id, bucket;
                                  """,true);
             
