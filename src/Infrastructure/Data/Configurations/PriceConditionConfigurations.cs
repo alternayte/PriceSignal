@@ -19,7 +19,7 @@ public class PriceConditionConfigurations : IEntityTypeConfiguration<PriceCondit
             .HasColumnType("double precision")
             .IsRequired();
         
-        builder.Property(pc => pc.AdditionalValue)
+        builder.Property(pc => pc.AdditionalValues)
             .HasColumnType("jsonb");
         
         builder.HasQueryFilter(pc => pc.DeletedAt == null);

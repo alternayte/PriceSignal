@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using Application.Common.Interfaces;
+using Application.Price;
+using Application.Rules;
 using Domain.Models.Exchanges;
 using Domain.Models.Instruments;
 using HotChocolate.Subscriptions;
@@ -15,7 +17,7 @@ public class BinanceProcessingService(
     ILogger<BinanceProcessingService> logger,
     IServiceProvider serviceProvider,
     TimeProvider timeProvider,
-    IWebsocketClientProvider websocketClientProvider)
+    IWebsocketClientProvider websocketClientProvider, RuleEngine ruleEngine)
     : BackgroundService
 {
     private ConcurrentDictionary<string, Price> _currentPriceData = new();
@@ -27,7 +29,7 @@ public class BinanceProcessingService(
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var exchange = dbContext.Exchanges.First(e => e.Name == "Binance");
+        var exchange = dbContext.Exchanges.FirstOrDefaultAsync(e => e.Name == "Binance", cancellationToken: stoppingToken);
         ExchangeId = exchange.Id;
         var channel = WebsocketChannel.SocketChannel;
         await foreach (var message in channel.Reader.ReadAllAsync(stoppingToken))
@@ -104,31 +106,15 @@ public class BinanceProcessingService(
                     
                 };
                 _currentPriceData[symbol] = ohlcData;
-                await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), new Price
-                {
-                    Symbol = ohlcData.Symbol,
-                    Open = ohlcData.Open,
-                    High = ohlcData.High,
-                    Low = ohlcData.Low,
-                    Close = ohlcData.Close,
-                    Volume = ohlcData.Volume,
-                    Bucket = ohlcData.Bucket,
-                });
+                await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), ohlcData);
+                ruleEngine.EvaluateRules(new PriceQuote(ohlcData));
             }
             else
             {
                 // Update the existing OHLC data
                 ohlcData.Update(price.Value, quantity.Value);
-                await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), new Price
-                {
-                    Symbol = ohlcData.Symbol,
-                    Open = ohlcData.Open,
-                    High = ohlcData.High,
-                    Low = ohlcData.Low,
-                    Close = ohlcData.Close,
-                    Volume = ohlcData.Volume,
-                    Bucket = ohlcData.Bucket,
-                });
+                await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), ohlcData);
+                ruleEngine.EvaluateRules(new PriceQuote(ohlcData));
             }
         }
         else
@@ -145,16 +131,8 @@ public class BinanceProcessingService(
                 Bucket = truncated,
             };
             _currentPriceData[symbol] = ohlcData;
-            await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), new Price
-            {
-                Symbol = ohlcData.Symbol,
-                Open = ohlcData.Open,
-                High = ohlcData.High,
-                Low = ohlcData.Low,
-                Close = ohlcData.Close,
-                Volume = ohlcData.Volume,
-                Bucket = ohlcData.Bucket,
-            });
+            await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), ohlcData);
+            ruleEngine.EvaluateRules(new PriceQuote(ohlcData));
         }
     }
 

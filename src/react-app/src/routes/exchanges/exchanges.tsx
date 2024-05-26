@@ -1,5 +1,4 @@
 import { ContentLayout } from "@/components/layouts/content";
-import { DashboardLayout } from "@/components/layouts/dashboard";
 import { ExchangesList } from "@/features/exchanges/components/exchanges-list";
 
 

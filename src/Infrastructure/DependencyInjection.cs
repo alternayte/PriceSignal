@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using Refit;
 
 namespace Infrastructure;
@@ -26,6 +27,8 @@ public static class DependencyInjection
         }
         else
         {
+            
+
             var postgresUri = File.ReadAllText("/app/secrets/uri");
             var connectionString = ConvertToNpgsqlConnectionString(postgresUri);
             services.AddDbContextFactory<AppDbContext>(options =>

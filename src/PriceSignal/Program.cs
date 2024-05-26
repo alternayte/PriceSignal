@@ -1,8 +1,12 @@
+using Application.Price;
+using Application.Rules;
+using Domain.Models.Instruments;
 using HotChocolate.Types.Pagination;
 using HotChocolate.Utilities;
 using Infrastructure;
 using Infrastructure.Data;
 using Infrastructure.Providers.Binance;
+using Microsoft.EntityFrameworkCore;
 using PriceSignal.BackgroundServices;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -56,11 +60,26 @@ builder.Services
     .UseAutomaticPersistedQueryPipeline()
     .AddInMemoryQueryStorage();
 
+builder.Services.AddSingleton<RuleCache>();
+builder.Services.AddSingleton<PriceHistoryCache>(provider => new PriceHistoryCache(500));
+builder.Services.AddSingleton<RuleEngine>();
+
 if (builder.Configuration.GetSection("Binance:Enabled").Get<bool>())
 {
     builder.Services.AddHostedService<BinancePairUpdateService>();
     builder.Services.AddSingleton<BinancePriceFetcherService>();
-    builder.Services.AddHostedService<BinancePriceFetcherService>(provider=>provider.GetRequiredService<BinancePriceFetcherService>());
+    builder.Services.AddHostedService<BinancePriceFetcherService>(provider=>
+    {
+        var ruleCache = provider.GetRequiredService<RuleCache>();
+        var priceHistoryCache = provider.GetRequiredService<PriceHistoryCache>();
+        var ruleEngine = provider.GetRequiredService<RuleEngine>();
+        
+        using var scope = provider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        
+        ruleCache.LoadRules(dbContext.PriceRules.Include(pr=>pr.Conditions).Include(pr=>pr.Instrument).ToList());
+        return provider.GetRequiredService<BinancePriceFetcherService>();
+    });
     builder.Services.AddHostedService<BinanceProcessingService>();
 }
 

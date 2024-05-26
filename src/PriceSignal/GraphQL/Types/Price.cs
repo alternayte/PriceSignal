@@ -34,5 +34,8 @@ public class PriceIntervalType : EnumType<PriceInterval>
         descriptor.BindValuesExplicitly();
         descriptor.Value(PriceInterval.OneMin).Name("ONE_MIN");
         descriptor.Value(PriceInterval.FiveMin).Name("FIVE_MIN");
+        descriptor.Value(PriceInterval.TenMin).Name("TEN_MIN");
+        descriptor.Value(PriceInterval.FifteenMin).Name("FIFTEEN_MIN");
+        descriptor.Value(PriceInterval.OneHour).Name("ONE_HOUR");
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -7,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations.PostgreSQL
 {
     /// <inheritdoc />
-    public partial class PriceRulesAndConditions : Migration
+    public partial class PriceRulesConfig : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -45,7 +46,7 @@ namespace Infrastructure.Migrations.PostgreSQL
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     condition_type = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     value = table.Column<double>(type: "double precision", nullable: false),
-                    additional_value = table.Column<string>(type: "jsonb", nullable: true),
+                    additional_values = table.Column<JsonDocument>(type: "jsonb", nullable: false),
                     rule_id = table.Column<long>(type: "bigint", nullable: false),
                     entity_id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "uuid_generate_v4()"),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),

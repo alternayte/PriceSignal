@@ -14,7 +14,7 @@ const httpLink = new HttpLink({
 const wsLink = new GraphQLWsLink(
     createClient({
         //url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/graphql`,
-        url: 'ws://localhost:5125/graphql',
+        url: import.meta.env.VITE_WS_URL as string,
     }),
 );
 

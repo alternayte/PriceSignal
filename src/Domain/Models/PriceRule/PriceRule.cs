@@ -6,7 +6,8 @@ public class PriceRule : BaseAuditableEntity
 {
     public required string Name { get; set; }
     public required string Description { get; set; }
-    public required Instrument Instrument { get; set; }
+    public Instrument Instrument { get; set; }
+    public required long InstrumentId { get; set; }
     public ICollection<PriceCondition> Conditions { get; set; } = new List<PriceCondition>();
 }
 
