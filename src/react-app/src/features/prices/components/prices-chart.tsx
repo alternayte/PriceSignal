@@ -2,6 +2,10 @@ import { useEffect, useRef } from 'react'
 import { init, dispose, KLineData, Chart } from 'klinecharts'
 
 const CHART_ID = 'chart'
+
+// const options:  Options | undefined = {
+//    
+// }
 type Props = {
     data: KLineData[]
 }
@@ -11,6 +15,7 @@ export const PricesChart = ({data}:Props) => {
     useEffect(() => {
         chart.current = init(CHART_ID)
         chart.current?.applyNewData(data)
+        chart.current?.createIndicator('RSI',true,{id:CHART_ID})
         
         return () => {
             dispose(CHART_ID)

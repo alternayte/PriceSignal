@@ -25,7 +25,10 @@ public class BinancePriceFetcherService(IWebsocketClientProvider websocketClient
         foreach (var symbol in dBsymbols)
         {
             symbols.Add(symbol);
-            var history = new List<IPrice>(dbContext.OneMinCandle.Where(o => o.Symbol == symbol).Take(500).Select(
+            var history = new List<IPrice>(dbContext.OneMinCandle
+                .Where(o => o.Symbol == symbol)
+                .OrderByDescending(o => o.Bucket.DateTime)
+                .Take(500).Select(
                 o=> new PriceQuote(new Price
                 {
                     Symbol = o.Symbol,

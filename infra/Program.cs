@@ -2,9 +2,11 @@ using System.Collections.Generic;
 using System.IO;
 using Pulumi;
 using Pulumi.Kubernetes.Core.V1;
+using Pulumi.Kubernetes.Networking.V1;
 using Pulumi.Kubernetes.Types.Inputs.Apps.V1;
 using Pulumi.Kubernetes.Types.Inputs.Core.V1;
 using Pulumi.Kubernetes.Types.Inputs.Meta.V1;
+using Pulumi.Kubernetes.Types.Inputs.Networking.V1;
 using Kubernetes = Pulumi.Kubernetes;
 
 return await Deployment.RunAsync(() => 
@@ -147,6 +149,60 @@ return await Deployment.RunAsync(() =>
                 },
             },
             Selector = appLabels,
+        },
+    });
+    
+    var webserveringress = new Ingress("price-signal-graph-ingress", new()
+    {
+        Metadata = new ObjectMetaArgs
+        {
+            Namespace = webserverNs.Metadata.Apply(m => m.Name),
+            Annotations = new InputMap<string>
+            {
+                { "kubernetes.io/ingress.class", "nginx" },
+                {"cert-manager.io/cluster-issuer", "letsencrypt-prod"}
+            },
+            Name = "price-signal-graph-ingress",
+        },
+        Spec = new IngressSpecArgs
+        {
+            Tls = new InputList<IngressTLSArgs>()
+            {
+                new IngressTLSArgs
+                {
+                    Hosts = new[] { "price-signal-graph.nxtspec.com" },
+                    SecretName = "price-signal-graph-tls",
+                },
+            },
+            Rules = new[]
+            {
+                new IngressRuleArgs
+                {
+                    Host = "price-signal-graph.nxtspec.com",
+                    Http = new HTTPIngressRuleValueArgs
+                    {
+                        Paths = new[]
+                        {
+                            new HTTPIngressPathArgs
+                            {
+                                Path = "/",
+                                PathType = "Prefix",
+                                Backend = new IngressBackendArgs
+                                {
+                                    Service = new IngressServiceBackendArgs
+                                    {
+                                        Name = webserverservice.Metadata.Apply(m=>m.Name),
+                                        Port = new ServiceBackendPortArgs
+                                        {
+                                            Number = webserverservice.Spec.Apply(s => s.Ports[0].Port),
+                                        }
+                                    }
+                                    },
+                            },
+                        },
+                    },
+                },
+            },
         },
     });
 

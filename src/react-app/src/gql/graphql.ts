@@ -18,6 +18,10 @@ export type Scalars = {
   DateTime: { input: any; output: any; }
   /** The built-in `Decimal` scalar type. */
   Decimal: { input: any; output: any; }
+  JSON: { input: any; output: any; }
+  /** The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1. */
+  Long: { input: any; output: any; }
+  UUID: { input: any; output: any; }
 };
 
 export enum ApplyPolicy {
@@ -25,6 +29,11 @@ export enum ApplyPolicy {
   BeforeResolver = 'BEFORE_RESOLVER',
   Validation = 'VALIDATION'
 }
+
+export type BaseEventFilterInput = {
+  and?: InputMaybe<Array<BaseEventFilterInput>>;
+  or?: InputMaybe<Array<BaseEventFilterInput>>;
+};
 
 /** Information about the offset pagination. */
 export type CollectionSegmentInfo = {
@@ -34,6 +43,12 @@ export type CollectionSegmentInfo = {
   /** Indicates whether more items exist prior the set defined by the clients arguments. */
   hasPreviousPage: Scalars['Boolean']['output'];
 };
+
+export enum ConditionType {
+  PriceChange = 'PRICE_CHANGE',
+  PricePercentChange = 'PRICE_PERCENT_CHANGE',
+  TechnicalIndicator = 'TECHNICAL_INDICATOR'
+}
 
 export type DateTimeOperationFilterInput = {
   eq?: InputMaybe<Scalars['DateTime']['input']>;
@@ -68,12 +83,28 @@ export type DecimalOperationFilterInput = {
 export type Exchange = {
   __typename?: 'Exchange';
   description?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+};
+
+export enum ExchangeCode {
+  Binance = 'BINANCE',
+  Coinbase = 'COINBASE',
+  DexScreener = 'DEX_SCREENER',
+  Kraken = 'KRAKEN'
+}
+
+export type ExchangeCodeOperationFilterInput = {
+  eq?: InputMaybe<ExchangeCode>;
+  in?: InputMaybe<Array<ExchangeCode>>;
+  neq?: InputMaybe<ExchangeCode>;
+  nin?: InputMaybe<Array<ExchangeCode>>;
 };
 
 export type ExchangeFilterInput = {
   and?: InputMaybe<Array<ExchangeFilterInput>>;
   description?: InputMaybe<StringOperationFilterInput>;
+  id?: InputMaybe<IdOperationFilterInput>;
   name?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<ExchangeFilterInput>>;
 };
@@ -91,6 +122,34 @@ export type ExchangesCollectionSegment = {
   /** Information to aid in pagination. */
   pageInfo: CollectionSegmentInfo;
   totalCount: Scalars['Int']['output'];
+};
+
+export type IdOperationFilterInput = {
+  eq?: InputMaybe<Scalars['ID']['input']>;
+  in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  neq?: InputMaybe<Scalars['ID']['input']>;
+  nin?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+};
+
+export type Instrument = {
+  __typename?: 'Instrument';
+  baseAsset: Scalars['String']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  quoteAsset: Scalars['String']['output'];
+  symbol: Scalars['String']['output'];
+};
+
+export type InstrumentFilterInput = {
+  and?: InputMaybe<Array<InstrumentFilterInput>>;
+  baseAsset?: InputMaybe<StringOperationFilterInput>;
+  exchange?: InputMaybe<ExchangeCodeOperationFilterInput>;
+  id?: InputMaybe<IdOperationFilterInput>;
+  name?: InputMaybe<StringOperationFilterInput>;
+  or?: InputMaybe<Array<InstrumentFilterInput>>;
+  quoteAsset?: InputMaybe<StringOperationFilterInput>;
+  symbol?: InputMaybe<StringOperationFilterInput>;
 };
 
 export type InstrumentPrice = {
@@ -145,6 +204,111 @@ export type InstrumentPricesEdge = {
   node: InstrumentPrice;
 };
 
+export type InstrumentSortInput = {
+  baseAsset?: InputMaybe<SortEnumType>;
+  createdAt?: InputMaybe<SortEnumType>;
+  deletedAt?: InputMaybe<SortEnumType>;
+  description?: InputMaybe<SortEnumType>;
+  entityId?: InputMaybe<SortEnumType>;
+  exchange?: InputMaybe<ExchangeSortInput>;
+  id?: InputMaybe<SortEnumType>;
+  modifiedAt?: InputMaybe<SortEnumType>;
+  name?: InputMaybe<SortEnumType>;
+  quoteAsset?: InputMaybe<SortEnumType>;
+  symbol?: InputMaybe<SortEnumType>;
+};
+
+/** A connection to a list of items. */
+export type InstrumentsConnection = {
+  __typename?: 'InstrumentsConnection';
+  /** A list of edges. */
+  edges?: Maybe<Array<InstrumentsEdge>>;
+  /** A flattened list of the nodes. */
+  nodes?: Maybe<Array<Instrument>>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** An edge in a connection. */
+export type InstrumentsEdge = {
+  __typename?: 'InstrumentsEdge';
+  /** A cursor for use in pagination. */
+  cursor: Scalars['String']['output'];
+  /** The item at the end of the edge. */
+  node: Instrument;
+};
+
+export type JsonDocumentFilterInput = {
+  and?: InputMaybe<Array<JsonDocumentFilterInput>>;
+  or?: InputMaybe<Array<JsonDocumentFilterInput>>;
+  rootElement?: InputMaybe<JsonElementFilterInput>;
+};
+
+export type JsonElementFilterInput = {
+  and?: InputMaybe<Array<JsonElementFilterInput>>;
+  or?: InputMaybe<Array<JsonElementFilterInput>>;
+  valueKind?: InputMaybe<JsonValueKindOperationFilterInput>;
+};
+
+export enum JsonValueKind {
+  Array = 'ARRAY',
+  False = 'FALSE',
+  Null = 'NULL',
+  Number = 'NUMBER',
+  Object = 'OBJECT',
+  String = 'STRING',
+  True = 'TRUE',
+  Undefined = 'UNDEFINED'
+}
+
+export type JsonValueKindOperationFilterInput = {
+  eq?: InputMaybe<JsonValueKind>;
+  in?: InputMaybe<Array<JsonValueKind>>;
+  neq?: InputMaybe<JsonValueKind>;
+  nin?: InputMaybe<Array<JsonValueKind>>;
+};
+
+export type ListFilterInputTypeOfBaseEventFilterInput = {
+  all?: InputMaybe<BaseEventFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']['input']>;
+  none?: InputMaybe<BaseEventFilterInput>;
+  some?: InputMaybe<BaseEventFilterInput>;
+};
+
+export type ListFilterInputTypeOfPriceConditionFilterInput = {
+  all?: InputMaybe<PriceConditionFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']['input']>;
+  none?: InputMaybe<PriceConditionFilterInput>;
+  some?: InputMaybe<PriceConditionFilterInput>;
+};
+
+export type LongOperationFilterInput = {
+  eq?: InputMaybe<Scalars['Long']['input']>;
+  gt?: InputMaybe<Scalars['Long']['input']>;
+  gte?: InputMaybe<Scalars['Long']['input']>;
+  in?: InputMaybe<Array<InputMaybe<Scalars['Long']['input']>>>;
+  lt?: InputMaybe<Scalars['Long']['input']>;
+  lte?: InputMaybe<Scalars['Long']['input']>;
+  neq?: InputMaybe<Scalars['Long']['input']>;
+  ngt?: InputMaybe<Scalars['Long']['input']>;
+  ngte?: InputMaybe<Scalars['Long']['input']>;
+  nin?: InputMaybe<Array<InputMaybe<Scalars['Long']['input']>>>;
+  nlt?: InputMaybe<Scalars['Long']['input']>;
+  nlte?: InputMaybe<Scalars['Long']['input']>;
+};
+
+export type Mutation = {
+  __typename?: 'Mutation';
+  createPriceRule: PriceRule;
+};
+
+
+export type MutationCreatePriceRuleArgs = {
+  input: PriceRuleInput;
+};
+
 /** Information about pagination in a connection. */
 export type PageInfo = {
   __typename?: 'PageInfo';
@@ -170,6 +334,34 @@ export type Price = {
   volume?: Maybe<Scalars['Decimal']['output']>;
 };
 
+export type PriceCondition = {
+  __typename?: 'PriceCondition';
+  additionalValues?: Maybe<Scalars['JSON']['output']>;
+  conditionType: ConditionType;
+  value: Scalars['Decimal']['output'];
+};
+
+export type PriceConditionFilterInput = {
+  additionalValues?: InputMaybe<JsonDocumentFilterInput>;
+  and?: InputMaybe<Array<PriceConditionFilterInput>>;
+  conditionType?: InputMaybe<StringOperationFilterInput>;
+  createdAt?: InputMaybe<DateTimeOperationFilterInput>;
+  deletedAt?: InputMaybe<DateTimeOperationFilterInput>;
+  entityId?: InputMaybe<UuidOperationFilterInput>;
+  events?: InputMaybe<ListFilterInputTypeOfBaseEventFilterInput>;
+  id?: InputMaybe<LongOperationFilterInput>;
+  modifiedAt?: InputMaybe<DateTimeOperationFilterInput>;
+  or?: InputMaybe<Array<PriceConditionFilterInput>>;
+  rule?: InputMaybe<PriceRuleFilterInput>;
+  value?: InputMaybe<DecimalOperationFilterInput>;
+};
+
+export type PriceConditionInput = {
+  additionalValues?: InputMaybe<Scalars['JSON']['input']>;
+  conditionType: ConditionType;
+  value: Scalars['Decimal']['input'];
+};
+
 export type PriceFilterInput = {
   and?: InputMaybe<Array<PriceFilterInput>>;
   bucket?: InputMaybe<DateTimeOperationFilterInput>;
@@ -184,9 +376,66 @@ export type PriceFilterInput = {
 };
 
 export enum PriceInterval {
+  FifteenMin = 'FIFTEEN_MIN',
   FiveMin = 'FIVE_MIN',
-  OneMin = 'ONE_MIN'
+  OneHour = 'ONE_HOUR',
+  OneMin = 'ONE_MIN',
+  TenMin = 'TEN_MIN'
 }
+
+export type PriceRule = {
+  __typename?: 'PriceRule';
+  conditions?: Maybe<Array<PriceCondition>>;
+  description?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  instrument: Instrument;
+  name: Scalars['String']['output'];
+};
+
+export type PriceRuleFilterInput = {
+  and?: InputMaybe<Array<PriceRuleFilterInput>>;
+  conditions?: InputMaybe<ListFilterInputTypeOfPriceConditionFilterInput>;
+  createdAt?: InputMaybe<DateTimeOperationFilterInput>;
+  deletedAt?: InputMaybe<DateTimeOperationFilterInput>;
+  description?: InputMaybe<StringOperationFilterInput>;
+  entityId?: InputMaybe<UuidOperationFilterInput>;
+  events?: InputMaybe<ListFilterInputTypeOfBaseEventFilterInput>;
+  id?: InputMaybe<LongOperationFilterInput>;
+  instrument?: InputMaybe<InstrumentFilterInput>;
+  instrumentId?: InputMaybe<LongOperationFilterInput>;
+  modifiedAt?: InputMaybe<DateTimeOperationFilterInput>;
+  name?: InputMaybe<StringOperationFilterInput>;
+  or?: InputMaybe<Array<PriceRuleFilterInput>>;
+};
+
+export type PriceRuleInput = {
+  conditions?: InputMaybe<Array<InputMaybe<PriceConditionInput>>>;
+  description: Scalars['String']['input'];
+  instrumentId: Scalars['ID']['input'];
+  name: Scalars['String']['input'];
+};
+
+/** A connection to a list of items. */
+export type PriceRulesConnection = {
+  __typename?: 'PriceRulesConnection';
+  /** A list of edges. */
+  edges?: Maybe<Array<PriceRulesEdge>>;
+  /** A flattened list of the nodes. */
+  nodes?: Maybe<Array<PriceRule>>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** An edge in a connection. */
+export type PriceRulesEdge = {
+  __typename?: 'PriceRulesEdge';
+  /** A cursor for use in pagination. */
+  cursor: Scalars['String']['output'];
+  /** The item at the end of the edge. */
+  node: PriceRule;
+};
 
 export type PriceSortInput = {
   bucket?: InputMaybe<SortEnumType>;
@@ -225,6 +474,8 @@ export type Query = {
   __typename?: 'Query';
   exchanges?: Maybe<ExchangesCollectionSegment>;
   instrumentPrices?: Maybe<InstrumentPricesConnection>;
+  instruments?: Maybe<InstrumentsConnection>;
+  priceRules?: Maybe<PriceRulesConnection>;
   prices?: Maybe<PricesConnection>;
 };
 
@@ -244,6 +495,24 @@ export type QueryInstrumentPricesArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
   order?: InputMaybe<Array<InstrumentPriceSortInput>>;
   where?: InputMaybe<InstrumentPriceFilterInput>;
+};
+
+
+export type QueryInstrumentsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  where?: InputMaybe<InstrumentFilterInput>;
+};
+
+
+export type QueryPriceRulesArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  where?: InputMaybe<PriceRuleFilterInput>;
 };
 
 
@@ -287,6 +556,21 @@ export type SubscriptionOnPriceUpdatedArgs = {
   symbol: Scalars['String']['input'];
 };
 
+export type UuidOperationFilterInput = {
+  eq?: InputMaybe<Scalars['UUID']['input']>;
+  gt?: InputMaybe<Scalars['UUID']['input']>;
+  gte?: InputMaybe<Scalars['UUID']['input']>;
+  in?: InputMaybe<Array<InputMaybe<Scalars['UUID']['input']>>>;
+  lt?: InputMaybe<Scalars['UUID']['input']>;
+  lte?: InputMaybe<Scalars['UUID']['input']>;
+  neq?: InputMaybe<Scalars['UUID']['input']>;
+  ngt?: InputMaybe<Scalars['UUID']['input']>;
+  ngte?: InputMaybe<Scalars['UUID']['input']>;
+  nin?: InputMaybe<Array<InputMaybe<Scalars['UUID']['input']>>>;
+  nlt?: InputMaybe<Scalars['UUID']['input']>;
+  nlte?: InputMaybe<Scalars['UUID']['input']>;
+};
+
 export type GetExchangesQueryVariables = Exact<{
   take: Scalars['Int']['input'];
 }>;
@@ -309,6 +593,7 @@ export type GetFocusedPricesQuery = { __typename?: 'Query', ETH?: { __typename?:
 
 export type GetPricesForSymbolQueryVariables = Exact<{
   symbol: Scalars['String']['input'];
+  last: Scalars['Int']['input'];
 }>;
 
 
@@ -324,5 +609,5 @@ export type SubscribeToPricesForSymbolSubscription = { __typename?: 'Subscriptio
 export const PriceItemFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PriceItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Price"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"close"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"volume"}}]}}]} as unknown as DocumentNode<PriceItemFragment, unknown>;
 export const GetExchangesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetExchanges"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"take"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"exchanges"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"take"},"value":{"kind":"Variable","name":{"kind":"Name","value":"take"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}}]}}]} as unknown as DocumentNode<GetExchangesQuery, GetExchangesQueryVariables>;
 export const GetFocusedPricesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetFocusedPrices"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"ETH"},"name":{"kind":"Name","value":"prices"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"last"},"value":{"kind":"IntValue","value":"1"}},{"kind":"Argument","name":{"kind":"Name","value":"interval"},"value":{"kind":"EnumValue","value":"ONE_MIN"}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"symbol"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"eq"},"value":{"kind":"StringValue","value":"ETHUSDT","block":false}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PriceItem"}}]}}]}}]}},{"kind":"Field","alias":{"kind":"Name","value":"BTC"},"name":{"kind":"Name","value":"prices"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"last"},"value":{"kind":"IntValue","value":"1"}},{"kind":"Argument","name":{"kind":"Name","value":"interval"},"value":{"kind":"EnumValue","value":"ONE_MIN"}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"symbol"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"eq"},"value":{"kind":"StringValue","value":"BTCUSDT","block":false}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PriceItem"}}]}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PriceItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Price"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"close"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"volume"}}]}}]} as unknown as DocumentNode<GetFocusedPricesQuery, GetFocusedPricesQueryVariables>;
-export const GetPricesForSymbolDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetPricesForSymbol"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"symbol"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"prices"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"last"},"value":{"kind":"IntValue","value":"100"}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"symbol"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"symbol"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"interval"},"value":{"kind":"EnumValue","value":"ONE_MIN"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"timestamp"},"name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"close"}},{"kind":"Field","name":{"kind":"Name","value":"high"}},{"kind":"Field","name":{"kind":"Name","value":"low"}},{"kind":"Field","name":{"kind":"Name","value":"open"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"volume"}}]}}]}}]}}]} as unknown as DocumentNode<GetPricesForSymbolQuery, GetPricesForSymbolQueryVariables>;
+export const GetPricesForSymbolDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetPricesForSymbol"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"symbol"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"last"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"prices"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"last"},"value":{"kind":"Variable","name":{"kind":"Name","value":"last"}}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"symbol"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"symbol"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"interval"},"value":{"kind":"EnumValue","value":"ONE_MIN"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"timestamp"},"name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"close"}},{"kind":"Field","name":{"kind":"Name","value":"high"}},{"kind":"Field","name":{"kind":"Name","value":"low"}},{"kind":"Field","name":{"kind":"Name","value":"open"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"volume"}}]}}]}}]}}]} as unknown as DocumentNode<GetPricesForSymbolQuery, GetPricesForSymbolQueryVariables>;
 export const SubscribeToPricesForSymbolDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"SubscribeToPricesForSymbol"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"symbol"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"onPriceUpdated"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"symbol"},"value":{"kind":"Variable","name":{"kind":"Name","value":"symbol"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"timestamp"},"name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"close"}},{"kind":"Field","name":{"kind":"Name","value":"high"}},{"kind":"Field","name":{"kind":"Name","value":"low"}},{"kind":"Field","name":{"kind":"Name","value":"open"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"volume"}}]}}]}}]} as unknown as DocumentNode<SubscribeToPricesForSymbolSubscription, SubscribeToPricesForSymbolSubscriptionVariables>;

@@ -17,7 +17,8 @@ public class BinanceProcessingService(
     ILogger<BinanceProcessingService> logger,
     IServiceProvider serviceProvider,
     TimeProvider timeProvider,
-    IWebsocketClientProvider websocketClientProvider, RuleEngine ruleEngine)
+    IWebsocketClientProvider websocketClientProvider,
+    RuleEngine ruleEngine)
     : BackgroundService
 {
     private ConcurrentDictionary<string, Price> _currentPriceData = new();
@@ -29,7 +30,8 @@ public class BinanceProcessingService(
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var exchange = dbContext.Exchanges.FirstOrDefaultAsync(e => e.Name == "Binance", cancellationToken: stoppingToken);
+        var exchange =
+            dbContext.Exchanges.FirstOrDefaultAsync(e => e.Name == "Binance", cancellationToken: stoppingToken);
         ExchangeId = exchange.Id;
         var channel = WebsocketChannel.SocketChannel;
         await foreach (var message in channel.Reader.ReadAllAsync(stoppingToken))
@@ -50,13 +52,13 @@ public class BinanceProcessingService(
         updateTimer?.Dispose();
         return base.StopAsync(stoppingToken);
     }
-    
+
     private async Task ProcessMessageAsync(string message)
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var topicEventSender = scope.ServiceProvider.GetRequiredService<ITopicEventSender>();
-        
+
         var json = JObject.Parse(message);
         var stream = json["stream"]?.ToString();
         var data = json["data"];
@@ -65,18 +67,18 @@ public class BinanceProcessingService(
         {
             return;
         }
-        
+
         var eventType = data["e"]?.ToString();
         if (eventType != "aggTrade")
         {
             return;
         }
-        
+
         var symbol = data["s"]?.ToString();
         var price = data["p"]?.ToObject<decimal>();
         var quantity = data["q"]?.ToObject<decimal>();
         var tradeTime = data["T"]?.ToObject<long>();
-        
+
         if (symbol == null || price == null || quantity == null || tradeTime == null)
         {
             return;
@@ -103,18 +105,17 @@ public class BinanceProcessingService(
                     Close = price.Value,
                     Volume = quantity.Value,
                     Bucket = truncated,
-                    
                 };
                 _currentPriceData[symbol] = ohlcData;
                 await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), ohlcData);
-                ruleEngine.EvaluateRules(new PriceQuote(ohlcData));
+                //ruleEngine.EvaluateRules(new PriceQuote(ohlcData));
             }
             else
             {
                 // Update the existing OHLC data
                 ohlcData.Update(price.Value, quantity.Value);
                 await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), ohlcData);
-                ruleEngine.EvaluateRules(new PriceQuote(ohlcData));
+                //ruleEngine.EvaluateRules(new PriceQuote(ohlcData));
             }
         }
         else
@@ -132,7 +133,7 @@ public class BinanceProcessingService(
             };
             _currentPriceData[symbol] = ohlcData;
             await topicEventSender.SendAsync(nameof(PriceSubscriptions.OnPriceUpdated), ohlcData);
-            ruleEngine.EvaluateRules(new PriceQuote(ohlcData));
+            //ruleEngine.EvaluateRules(new PriceQuote(ohlcData));
         }
     }
 
@@ -179,6 +180,22 @@ public class BinanceProcessingService(
         try
         {
             //await dbContext.Database.ExecuteSqlRawAsync(insertQuery);
+            var lastPrice = await dbContext.OneMinCandle
+                .Where(o => o.Symbol == symbol)
+                .OrderByDescending(o => o.Bucket)
+                .LastAsync();
+
+            var latestPrice = new PriceQuote(new Price
+            {
+                Symbol = symbol,
+                Open = lastPrice.Open,
+                High = lastPrice.High,
+                Low = lastPrice.Low,
+                Close = lastPrice.Close,
+                Volume = lastPrice.Volume,
+                Bucket = lastPrice.Bucket,
+            });
+            ruleEngine.EvaluateRules(latestPrice);
         }
         catch (Exception e)
         {

@@ -27,7 +27,7 @@ public class PriceSubscriptions
         await foreach (var price in stream.ReadEventsAsync().WithCancellation(cancellationToken))
         {
             if (price.Symbol != symbol) continue;
-            Console.WriteLine($"Price: c:{price.Close} h: {price.High} l: {price.Low} o: {price.Open}  v: {price.Volume}");
+            //Console.WriteLine($"Price: c:{price.Close} h: {price.High} l: {price.Low} o: {price.Open}  v: {price.Volume}");
             // var priceItem = await _dbContext.OneMinCandle
             //     .Where(c => c.Symbol == symbol)
             //     .OrderByDescending(c => c.Bucket)

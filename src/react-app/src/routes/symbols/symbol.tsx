@@ -7,9 +7,9 @@ import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const getPricesForSymbolQuery = graphql(`
-  query GetPricesForSymbol($symbol: String!) {
+  query GetPricesForSymbol($symbol: String!,$last: Int!) {
     prices(
-      last: 100
+      last: $last
       where: { symbol: { eq: $symbol } }
       # order: { bucket: DESC }
       interval: ONE_MIN
@@ -46,12 +46,12 @@ export const SymbolRoute = () => {
   const navigate = useNavigate();
   const symbol = params.symbol as string;
 
-  const { data, loading, subscribeToMore } = useQuery(getPricesForSymbolQuery, { variables: { symbol } });
+  const { data, loading, subscribeToMore } = useQuery(getPricesForSymbolQuery, { variables: { symbol, last:500 } });
 
   useEffect(() => {
     const unsubscribe = subscribeToMore<Price>({
       document: subscribeToPricesForSymbol,
-      variables: { symbol },
+      variables: { symbol,last:500 },
       updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) {
           return {

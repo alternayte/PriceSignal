@@ -18,7 +18,7 @@ public class RuleEngine(RuleCache ruleCache, PriceHistoryCache priceHistoryCache
             if (EvaluateConditions(price, rule))
             {
                 // Trigger alert or action
-                Console.WriteLine($"Rule triggered: {rule.Name}");
+                //Console.WriteLine($"Rule triggered: {rule.Name}");
             }
         }
 
@@ -79,7 +79,7 @@ public class RuleEngine(RuleCache ruleCache, PriceHistoryCache priceHistoryCache
             }
             // Add additional condition types as needed
         }
-        logger.LogInformation($"Rule {rule.Name} triggered for {price.Symbol} at {price.Date} with price {price.Close} and conditions {string.Join(", ", rule.Conditions.Select(c => c.ConditionType))}");
+        //logger.LogInformation($"Rule {rule.Name} triggered for {price.Symbol} at {price.Date} with price {price.Close} and conditions {string.Join(", ", rule.Conditions.Select(c => c.ConditionType))}");
         return true;
     }
 

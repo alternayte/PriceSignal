@@ -11,6 +11,8 @@
 FROM node:21 AS build-node
 WORKDIR /app
 COPY src/react-app/ ./
+ENV VITE_WS_URL=wss://price-signal-graph.nxtspec.com/graphql
+
 RUN npm install
 RUN npm run build
 
