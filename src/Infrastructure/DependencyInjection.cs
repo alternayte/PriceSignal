@@ -1,8 +1,8 @@
 ﻿using Application.Common.Interfaces;
+using Application.Services.Binance;
 using Infrastructure.Data;
 using Infrastructure.Data.Interceptors;
 using Infrastructure.Providers;
-using Infrastructure.Providers.Binance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -44,9 +44,12 @@ public static class DependencyInjection
             var logger = sp.GetRequiredService<ILogger<WebsocketClientProvider>>();
             return new WebsocketClientProvider(binanceWebsocketUrl, logger);
         });
-        
+
         services.AddRefitClient<IBinanceApi>()
-            .ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration.GetSection("Binance:ApiUrl").Value ?? throw new InvalidOperationException()));
+            .ConfigureHttpClient(c =>
+                c.BaseAddress = new Uri(configuration.GetSection("Binance:ApiUrl").Value ??
+                                        throw new InvalidOperationException()))
+            .AddPolicyHandler(HttpPolicyExtensions.GetRateLimitPolicy());
 
         return services;
     }

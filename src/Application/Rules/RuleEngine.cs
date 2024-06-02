@@ -3,25 +3,37 @@ using Domain.Models.PriceRule;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
+using NRules;
 using Skender.Stock.Indicators;
 
 namespace Application.Rules;
 
-public class RuleEngine(RuleCache ruleCache, PriceHistoryCache priceHistoryCache, ILogger<RuleEngine> logger)
+public class RuleEngine(RuleCache ruleCache, PriceHistoryCache priceHistoryCache, ILogger<RuleEngine> logger, ISession session)
 {
     public void EvaluateRules(IPrice price)
     {
+        session.Insert(price);
+        
         var rules = ruleCache.GetAllRules().Where(r => r.Instrument.Symbol == price.Symbol).ToList();
 
         foreach (var rule in rules)
         {
-            if (EvaluateConditions(price, rule))
-            {
-                // Trigger alert or action
-                //Console.WriteLine($"Rule triggered: {rule.Name}");
-            }
+            session.Insert(rule);
+            // if (EvaluateConditions(price, rule))
+            // {
+            //     
+            //     // Trigger alert or action
+            //     Console.WriteLine($"Rule triggered: {rule.Name}");
+            // }
         }
 
+        session.Fire();
+
+        session.Retract(price);
+        foreach (var rule in rules)
+        {
+            session.Retract(rule);
+        }
         // Add the new price to the history cache
         priceHistoryCache.AddPrice(price.Symbol, price);
     }

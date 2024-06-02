@@ -180,11 +180,11 @@ public class BinanceProcessingService(
         try
         {
             //await dbContext.Database.ExecuteSqlRawAsync(insertQuery);
-            var lastPrice = await dbContext.OneMinCandle
+            var lastPrice =  dbContext.OneMinCandle
                 .Where(o => o.Symbol == symbol)
                 .OrderByDescending(o => o.Bucket)
-                .LastAsync();
-
+                .Last();
+            
             var latestPrice = new PriceQuote(new Price
             {
                 Symbol = symbol,

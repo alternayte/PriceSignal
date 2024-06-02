@@ -1,14 +1,15 @@
+using Application.Services.Binance;
 using Domain.Models.Instruments;
 using Infrastructure.Data;
-using Infrastructure.Providers.Binance;
 using Microsoft.EntityFrameworkCore;
 
 namespace PriceSignal.BackgroundServices;
 
-public class BinancePairUpdateService(IServiceProvider serviceProvider) : BackgroundService
+public class BinancePairUpdateService(IServiceProvider serviceProvider, ILogger<BinancePairUpdateService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        logger.LogInformation("BinancePairUpdateService is starting.");
         while (!stoppingToken.IsCancellationRequested)
         {
             using var scope = serviceProvider.CreateScope();
@@ -47,8 +48,12 @@ public class BinancePairUpdateService(IServiceProvider serviceProvider) : Backgr
             }
             
             await dbContext.SaveChangesAsync(stoppingToken);
+            
+            logger.LogInformation("BinancePairUpdateService is running.");
 
             await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
+            logger.LogInformation("BinancePairUpdateService will run again in 1 day.");
         }
+        logger.LogInformation("BinancePairUpdateService is stopping.");
     }
     }

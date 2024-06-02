@@ -1,4 +1,4 @@
-namespace Infrastructure.Providers.Binance.Models;
+namespace Application.Services.Binance.Models;
 
 
 public record ExchangeInfo(

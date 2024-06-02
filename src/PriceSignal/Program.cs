@@ -1,11 +1,12 @@
+using System.Collections.Concurrent;
 using Application.Price;
 using Application.Rules;
+using Application.Services.Binance;
 using Domain.Models.Instruments;
 using HotChocolate.Types.Pagination;
 using HotChocolate.Utilities;
 using Infrastructure;
 using Infrastructure.Data;
-using Infrastructure.Providers.Binance;
 using Microsoft.EntityFrameworkCore;
 using PriceSignal.BackgroundServices;
 
@@ -62,12 +63,21 @@ builder.Services
 
 builder.Services.AddSingleton<RuleCache>();
 builder.Services.AddSingleton<PriceHistoryCache>(provider => new PriceHistoryCache(500));
+
+builder.Services.AddSingleton(provider =>
+{
+    var ruleEngineConfig = new RuleEngineConfig(provider);
+    return ruleEngineConfig.CreateSession();
+});
 builder.Services.AddSingleton<RuleEngine>();
 
 if (builder.Configuration.GetSection("Binance:Enabled").Get<bool>())
 {
+    ConcurrentBag<string> symbols = new() {"BTCUSDT", "ETHUSDT"};
+    builder.Services.AddSingleton(symbols);
     builder.Services.AddHostedService<BinancePairUpdateService>();
     builder.Services.AddSingleton<BinancePriceFetcherService>();
+    builder.Services.AddHostedService<BinanceBackfillService>();
     builder.Services.AddHostedService<BinancePriceFetcherService>(provider=>
     {
         var ruleCache = provider.GetRequiredService<RuleCache>();

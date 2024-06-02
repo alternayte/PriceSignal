@@ -8,7 +8,7 @@ public class RSI : ITechnicalIndicator
 {
     public decimal Calculate(IEnumerable<IPrice> prices, Dictionary<string, string> inputs)
     {
-        var period = int.Parse(inputs["period"]);
+        var period = int.Parse(inputs["Period"]);
         var results = prices.GetRsi(period);
         var rsi = results.Last().Rsi;
         if (rsi == null) return 0;

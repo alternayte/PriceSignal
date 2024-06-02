@@ -2,6 +2,8 @@
 using System.Collections.Concurrent;
 using Application.Common.Interfaces;
 using Application.Price;
+using Application.Services.Binance;
+using Application.Services.Binance.Models;
 using Domain.Models.Instruments;
 using Infrastructure.Channels;
 using Infrastructure.Data;
@@ -9,15 +11,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace PriceSignal.BackgroundServices;
 
-public class BinancePriceFetcherService(IWebsocketClientProvider websocketClientProvider, IServiceProvider serviceProvider, PriceHistoryCache priceHistoryCache)
+public class BinancePriceFetcherService(IWebsocketClientProvider websocketClientProvider, IServiceProvider serviceProvider, PriceHistoryCache priceHistoryCache,ConcurrentBag<string> symbols)
     : BackgroundService
 {
     private ConcurrentDictionary<string, bool> _activeStreams = new();
-    private ConcurrentBag<string> symbols = new() {"BTCUSDT", "ETHUSDT"};
+    //private ConcurrentBag<string> symbols = new() {"BTCUSDT", "ETHUSDT"};
 
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        //await BackfillData();
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var dBsymbols = dbContext.PriceRules.Select(r => r.Instrument.Symbol).Distinct().ToList();
@@ -47,8 +50,7 @@ public class BinancePriceFetcherService(IWebsocketClientProvider websocketClient
         {
             await WebsocketChannel.SocketChannel.Writer.WriteAsync(message, stoppingToken);
         });
-        return Task.CompletedTask;
-
+        
     }
     
     public void UpdateSubscriptionsAsync()
@@ -115,6 +117,24 @@ public class BinancePriceFetcherService(IWebsocketClientProvider websocketClient
         websocketClientProvider.Stop();
         return base.StopAsync(stoppingToken);
     }
-    
+
+    private async Task BackfillData()
+    {
+
+        
+        using var scope = serviceProvider.CreateScope();
+        var binanceApi = scope.ServiceProvider.GetRequiredService<IBinanceApi>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var historicalData = await binanceApi.GetHistoricalCandlesAsync(new KlineParams
+        {
+            Symbol = "BTCUSDT",
+            Interval = KlineInterval.OneMinute,
+            StartTime = DateTimeOffset.UtcNow.AddDays(-1).ToUnixTimeMilliseconds(),
+            // EndTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        });
+        //dbContext.InstrumentPrices.AddRange(historicalData);
+        //await dbContext.SaveChangesAsync();
+    }
     
 }
