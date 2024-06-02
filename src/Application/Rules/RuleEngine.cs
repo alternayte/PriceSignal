@@ -12,6 +12,7 @@ public class RuleEngine(RuleCache ruleCache, PriceHistoryCache priceHistoryCache
 {
     public void EvaluateRules(IPrice price)
     {
+        priceHistoryCache.AddPrice(price.Symbol, price);
         session.Insert(price);
         
         var rules = ruleCache.GetAllRules().Where(r => r.Instrument.Symbol == price.Symbol).ToList();
@@ -34,8 +35,6 @@ public class RuleEngine(RuleCache ruleCache, PriceHistoryCache priceHistoryCache
         {
             session.Retract(rule);
         }
-        // Add the new price to the history cache
-        priceHistoryCache.AddPrice(price.Symbol, price);
     }
 
     private bool EvaluateConditions(IPrice price, PriceRule rule)

@@ -183,7 +183,7 @@ public class BinanceProcessingService(
             var lastPrice =  dbContext.OneMinCandle
                 .Where(o => o.Symbol == symbol)
                 .OrderByDescending(o => o.Bucket)
-                .Last();
+                .First();
             
             var latestPrice = new PriceQuote(new Price
             {

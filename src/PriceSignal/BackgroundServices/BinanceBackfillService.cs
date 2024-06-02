@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Application.Price;
 using Application.Services.Binance;
 using Application.Services.Binance.Models;
 using Domain.Models.Instruments;
@@ -7,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace PriceSignal.BackgroundServices;
 
-public class BinanceBackfillService(IServiceProvider serviceProvider, ILogger<BinanceBackfillService> logger,ConcurrentBag<string> symbols) : BackgroundService
+public class BinanceBackfillService(IServiceProvider serviceProvider, ILogger<BinanceBackfillService> logger,ConcurrentBag<string> symbols, PriceHistoryCache priceHistoryCache) : BackgroundService
 {
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -32,17 +33,27 @@ public class BinanceBackfillService(IServiceProvider serviceProvider, ILogger<Bi
             var startTime = DateTimeOffset.UtcNow.AddDays(-1).ToUnixTimeMilliseconds();
             
             // check if we have data for the symbol within this time frame. if we do, skip
-            var existingCount = await dbContext.OneMinCandle
+            var existingData = await dbContext.OneMinCandle
                 .Where(p => p.Symbol == symbol && p.Exchange.Id == binanceExchange.Id &&
                             p.Bucket >= DateTimeOffset.FromUnixTimeMilliseconds(startTime) &&
                             p.Bucket <= DateTimeOffset.FromUnixTimeMilliseconds(endTime))
-                .CountAsync(cancellationToken: cancellationToken);
-                // .ToListAsync(cancellationToken);
-                if (existingCount >= 1000)
+                .OrderBy(p=>p.Bucket)
+                //.CountAsync(cancellationToken: cancellationToken);
+                .ToListAsync(cancellationToken);
+                if (existingData.Count >= 1439)
                 {
                     continue;
                 }
-            // if (existingData.Count != 0)
+
+                // if we have some data, but not enough, we need to backfill. find gaps in the data and set the start time to the last known data point. there should be more than 1 minute of data missing
+                for (var i = 0; i < existingData.Count - 1; i++)
+                {
+                    var diff = existingData[i + 1].Bucket - existingData[i].Bucket;
+                    if (!(diff.TotalMinutes > 1)) continue;
+                    startTime = existingData[i].Bucket.ToUnixTimeMilliseconds();
+                    break;
+                }
+                // if (existingData.Count != 0)
             // {
             //     continue;
             // }
@@ -86,7 +97,30 @@ public class BinanceBackfillService(IServiceProvider serviceProvider, ILogger<Bi
                                            """;
                         await dbContext.Database.ExecuteSqlRawAsync(insertQuery, cancellationToken: cancellationToken);
                     }
+
+                    var sqlStartTime = $"{DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(-2).UtcDateTime):O}";
+                    var sqlEndTime = $"{DateOnly.FromDateTime(DateTime.UtcNow):O}";
+                    await dbContext.Database.ExecuteSqlRawAsync($"""
+                                                                 call refresh_continuous_aggregate('one_min_candle','{sqlStartTime}','{sqlEndTime}');
+                                                                 """, cancellationToken: cancellationToken);
                     
+                    var history = new List<IPrice>(dbContext.OneMinCandle
+                        .Where(o => o.Symbol == symbol)
+                        .OrderByDescending(o => o.Bucket.DateTime)
+                        .Take(500).Select(
+                            o=> new PriceQuote(new Price
+                            {
+                                Symbol = o.Symbol,
+                                Open = o.Open,
+                                High = o.High,
+                                Low = o.High,
+                                Close = o.Close,
+                                Volume = o.Volume,
+                                Bucket = o.Bucket,
+                            })
+                        ).ToList());
+                    priceHistoryCache.LoadPriceHistory(symbol,history);
+
 
 
                 }

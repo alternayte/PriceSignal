@@ -5,7 +5,7 @@ namespace Application.Price;
 
 public class PriceHistoryCache
 {
-    private readonly ConcurrentDictionary<string, FixedSizeQueue<IPrice>> _priceHistory = new ConcurrentDictionary<string, FixedSizeQueue<IPrice>>();
+    private readonly ConcurrentDictionary<string, FixedSizeQueue<IPrice>> _priceHistory = new();
     private readonly int _maxSize;
 
     public PriceHistoryCache(int maxSize = 500)
