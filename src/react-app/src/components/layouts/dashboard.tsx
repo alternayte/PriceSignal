@@ -1,6 +1,6 @@
 import { SymbolsSearch } from '@/features/symbols/components/symbols-search';
 import { cn } from '@/lib/utils';
-import { CoinsIcon, HomeIcon, PieChartIcon, ReplaceIcon, SettingsIcon, WalletIcon } from 'lucide-react';
+import {CoinsIcon, HomeIcon, PieChartIcon, PuzzleIcon, ReplaceIcon, SettingsIcon, WalletIcon} from 'lucide-react';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -9,6 +9,11 @@ const navItems = [
     label: 'Dashboard',
     icon: HomeIcon,
     to: '/',
+  },
+  {
+    label: 'Rules',
+    icon: PuzzleIcon,
+    to: '/rules',
   },
   {
     label: 'Wallet',

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using PriceSignal.BackgroundServices;
 using PriceSignal.GraphQL.Types;
 
+
 namespace PriceSignal.GraphQL.Mutations;
 
 [MutationType]
@@ -46,8 +47,8 @@ public class PriceRuleMutations
             dbContext.PriceRules.Add(priceRule);
             await dbContext.SaveChangesAsync();
             ruleCache.AddOrUpdateRule(priceRule);
-            var binanceProcessingService = serviceProvider.GetRequiredService<BinancePriceFetcherService>();
-            if (binanceProcessingService != null) binanceProcessingService.UpdateSubscriptionsAsync();            
+            var binanceProcessingService = serviceProvider.GetService<BinancePriceFetcherService>();
+            binanceProcessingService?.UpdateSubscriptionsAsync();            
         } catch (Exception e)
         {
             throw new InvalidOperationException("Error creating price rule", e);

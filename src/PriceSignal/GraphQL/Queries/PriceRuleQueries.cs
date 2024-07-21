@@ -1,5 +1,6 @@
 using Domain.Models.PriceRule;
 using Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace PriceSignal.GraphQL.Queries;
 
@@ -13,4 +14,6 @@ public class PriceRuleQueries
     {
         return dbContext.PriceRules.AsQueryable();
     }
+    
+
 }

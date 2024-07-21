@@ -1,18 +1,50 @@
 using System.Text.Json;
+using Application.Common.Interfaces;
+using Domain.Models.Instruments;
 using Domain.Models.PriceRule;
+using HotChocolate.Types.Pagination;
+using Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using PriceSignal.GraphQL.Queries;
 
 namespace PriceSignal.GraphQL.Types;
+
 
 public class PriceRuleType : ObjectType<PriceRule>
 {
     protected override void Configure(IObjectTypeDescriptor<PriceRule> descriptor)
     {
         descriptor.BindFieldsExplicitly();
-        descriptor.Field(x => x.Id).Type<NonNullType<IdType>>();
+        descriptor.Field(x => x.EntityId).Type<NonNullType<IdType>>().Name("id");
         descriptor.Field(x => x.Name).Type<NonNullType<StringType>>();
         descriptor.Field(x => x.Description).Type<StringType>();
         descriptor.Field(x => x.Instrument).Type<NonNullType<InstrumentType>>();
-        descriptor.Field(x => x.Conditions).Type<ListType<NonNullType<PriceConditionType>>>();
+        descriptor.Field(x => x.Conditions).Type<ListType<NonNullType<PriceConditionType>>>()
+            .UsePaging(options: new PagingOptions {IncludeTotalCount = true})
+            .UseProjection()
+            .Resolve(context =>
+            {
+                var rule = context.Parent<PriceRule>();
+                return context.Services.GetRequiredService<IPriceConditionsOnPriceRuleDataLoader>().LoadAsync(rule.EntityId);
+            });
+        descriptor.Field(x=>x.CreatedAt).Type<NonNullType<DateTimeType>>();
+        
+    }
+    
+    [DataLoader]
+    internal static async Task<ILookup<Guid,PriceCondition>> GetPriceConditionsOnPriceRuleAsync(IReadOnlyList<Guid> priceRuleIds, 
+        AppDbContext dbContext, CancellationToken cancellationToken)
+    {
+        var rules = dbContext.PriceRules.Include(x => x.Conditions).AsQueryable()
+            .Where(x => priceRuleIds.Contains(x.EntityId));
+
+        return rules.SelectMany(x => x.Conditions.Select(c => new PriceCondition()
+        {
+            Rule = x,
+            ConditionType = c.ConditionType,
+            Value = c.Value,
+            AdditionalValues = c.AdditionalValues
+        })).ToLookup(x => x.Rule.EntityId);
     }
 }
 

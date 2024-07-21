@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Domain.Models.PriceRule;
 
 namespace PriceSignal.GraphQL.Types;
@@ -10,7 +11,14 @@ public class PriceConditionType : ObjectType<PriceCondition>
         //descriptor.Field(x=>x.Id).Type<NonNullType<IdType>>();
         //descriptor.Field(x=> x.Rule).Type<NonNullType<PriceRuleType>>();
         descriptor.Field(x=>x.Value).Type<NonNullType<DecimalType>>();
-        descriptor.Field(x => x.AdditionalValues).Type<JsonType>();
+        descriptor.Field(x => x.AdditionalValues).Type<StringType>()
+            .Resolve(context =>
+            {
+                var condition = context.Parent<PriceCondition>();
+                //return condition.AdditionalValues.RootElement.GetRawText();
+                //return condition.AdditionalValues.Deserialize<string>();
+                return JsonSerializer.Serialize(condition.AdditionalValues);
+            });
         descriptor.Field(x=>x.ConditionType).Type<NonNullType<ConditionTypeType>>();
 
     }

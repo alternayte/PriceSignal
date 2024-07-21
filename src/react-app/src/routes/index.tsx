@@ -28,6 +28,16 @@ export const createRouter = () =>
                 },
             },
             {
+                path: '/rules',
+                lazy: async () => {
+                    const { RulesRoute } = await import('@/routes/rules/rules');
+                    return { Component: RulesRoute };
+                },
+                loader: () => {
+                    return <div>Loading...</div>;
+                },
+            },
+            {
                 path: '/symbols/:symbol',
                 lazy: async () => {
                     const { SymbolRoute } = await import('@/routes/symbols/symbol');

@@ -16,6 +16,9 @@ const documents = {
     "\nquery GetExchanges($take: Int!) {\n      exchanges(take: $take) {\n        totalCount\n        items {\n          name\n          description\n        }\n      }\n    }\n": types.GetExchangesDocument,
     "\n  fragment PriceItem on Price {\n    bucket\n    close\n    symbol\n    volume\n  }\n": types.PriceItemFragmentDoc,
     "\nquery GetFocusedPrices {\n  ETH:prices(last: 1,interval: ONE_MIN,where: {symbol:{eq:\"ETHUSDT\"}}) {\n    edges {\n      node {\n        ...PriceItem\n      }\n    }\n  }\n  BTC:prices(last: 1,interval: ONE_MIN,where: {symbol:{eq:\"BTCUSDT\"}}) {\n    edges {\n      node {\n        ...PriceItem\n      }\n    }\n  }\n}\n": types.GetFocusedPricesDocument,
+    "\n    mutation CreatePriceRule($newRule: PriceRuleInput!) {\n        createPriceRule(input:$newRule) {\n            id\n            name\n            description\n        }\n    }\n": types.CreatePriceRuleDocument,
+    "\n    query GetInstruments($first: Int!) {\n        instruments(first:$first) {\n            totalCount\n            edges {\n                node {\n                symbol\n                id\n                }\n            }\n        }\n    }\n": types.GetInstrumentsDocument,
+    "\nquery GetPriceRules($first: Int) {\n  priceRules(first: $first) {\n    edges {\n      node {\n        description\n        id\n        name\n        instrument {\n          symbol\n        }\n      }\n    }\n    totalCount\n    pageInfo {\n      hasPreviousPage\n      hasNextPage\n    }\n  }\n}\n": types.GetPriceRulesDocument,
     "\n  query GetPricesForSymbol($symbol: String!,$last: Int!) {\n    prices(\n      last: $last\n      where: { symbol: { eq: $symbol } }\n      # order: { bucket: DESC }\n      interval: ONE_MIN\n    ) {\n      nodes {\n        timestamp: bucket\n        close\n        high\n        low\n        open\n        symbol\n        volume\n      }\n    }\n  }\n": types.GetPricesForSymbolDocument,
     "\n  subscription SubscribeToPricesForSymbol($symbol: String!) {\n    onPriceUpdated(symbol: $symbol) {\n      timestamp: bucket\n      close\n      high\n      low\n      open\n      symbol\n      volume\n    }\n  }\n": types.SubscribeToPricesForSymbolDocument,
 };
@@ -46,6 +49,18 @@ export function graphql(source: "\n  fragment PriceItem on Price {\n    bucket\n
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\nquery GetFocusedPrices {\n  ETH:prices(last: 1,interval: ONE_MIN,where: {symbol:{eq:\"ETHUSDT\"}}) {\n    edges {\n      node {\n        ...PriceItem\n      }\n    }\n  }\n  BTC:prices(last: 1,interval: ONE_MIN,where: {symbol:{eq:\"BTCUSDT\"}}) {\n    edges {\n      node {\n        ...PriceItem\n      }\n    }\n  }\n}\n"): (typeof documents)["\nquery GetFocusedPrices {\n  ETH:prices(last: 1,interval: ONE_MIN,where: {symbol:{eq:\"ETHUSDT\"}}) {\n    edges {\n      node {\n        ...PriceItem\n      }\n    }\n  }\n  BTC:prices(last: 1,interval: ONE_MIN,where: {symbol:{eq:\"BTCUSDT\"}}) {\n    edges {\n      node {\n        ...PriceItem\n      }\n    }\n  }\n}\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    mutation CreatePriceRule($newRule: PriceRuleInput!) {\n        createPriceRule(input:$newRule) {\n            id\n            name\n            description\n        }\n    }\n"): (typeof documents)["\n    mutation CreatePriceRule($newRule: PriceRuleInput!) {\n        createPriceRule(input:$newRule) {\n            id\n            name\n            description\n        }\n    }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    query GetInstruments($first: Int!) {\n        instruments(first:$first) {\n            totalCount\n            edges {\n                node {\n                symbol\n                id\n                }\n            }\n        }\n    }\n"): (typeof documents)["\n    query GetInstruments($first: Int!) {\n        instruments(first:$first) {\n            totalCount\n            edges {\n                node {\n                symbol\n                id\n                }\n            }\n        }\n    }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\nquery GetPriceRules($first: Int) {\n  priceRules(first: $first) {\n    edges {\n      node {\n        description\n        id\n        name\n        instrument {\n          symbol\n        }\n      }\n    }\n    totalCount\n    pageInfo {\n      hasPreviousPage\n      hasNextPage\n    }\n  }\n}\n"): (typeof documents)["\nquery GetPriceRules($first: Int) {\n  priceRules(first: $first) {\n    edges {\n      node {\n        description\n        id\n        name\n        instrument {\n          symbol\n        }\n      }\n    }\n    totalCount\n    pageInfo {\n      hasPreviousPage\n      hasNextPage\n    }\n  }\n}\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
