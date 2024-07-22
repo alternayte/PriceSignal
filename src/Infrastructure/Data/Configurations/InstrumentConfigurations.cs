@@ -9,7 +9,8 @@ public class InstrumentConfigurations : IEntityTypeConfiguration<Instrument>
     public void Configure(EntityTypeBuilder<Instrument> builder)
     {
         builder.Property(i=> i.EntityId)
-            .HasDefaultValueSql("uuid_generate_v4()");
+            .HasDefaultValueSql("uuid_generate_v4()")
+            .ValueGeneratedOnAdd();
         
         builder.Property(i => i.Symbol)
             .HasMaxLength(255)
@@ -29,6 +30,17 @@ public class InstrumentConfigurations : IEntityTypeConfiguration<Instrument>
         builder.Property(i => i.QuoteAsset)
             .HasMaxLength(255)
             .IsRequired();
+        
+        builder.Property(pr=>pr.CreatedAt)
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAdd();
+        
+        builder.Property(pr=>pr.ModifiedAt)
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnUpdate();
+
+        builder.Property(pr => pr.DeletedAt)
+            .HasDefaultValue(null);
 
         builder.HasQueryFilter(i => i.DeletedAt == null);
     }

@@ -9,7 +9,8 @@ public class PriceConditionConfigurations : IEntityTypeConfiguration<PriceCondit
     public void Configure(EntityTypeBuilder<PriceCondition> builder)
     {
         builder.Property(pc=> pc.EntityId)
-            .HasDefaultValueSql("uuid_generate_v4()");
+            .HasDefaultValueSql("uuid_generate_v4()")
+            .ValueGeneratedOnAdd();
         
         builder.Property(pc=>pc.ConditionType)
             .HasMaxLength(255)
@@ -21,6 +22,17 @@ public class PriceConditionConfigurations : IEntityTypeConfiguration<PriceCondit
         
         builder.Property(pc => pc.AdditionalValues)
             .HasColumnType("jsonb");
+        
+        builder.Property(pr=>pr.CreatedAt)
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnAdd();
+        
+        builder.Property(pr=>pr.ModifiedAt)
+            .HasDefaultValueSql("now()")
+            .ValueGeneratedOnUpdate();
+
+        builder.Property(pr => pr.DeletedAt)
+            .HasDefaultValue(null);
         
         builder.HasQueryFilter(pc => pc.DeletedAt == null);
     }

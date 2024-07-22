@@ -23,17 +23,6 @@ import { graphql } from "@/gql";
 import {useMutation, useQuery} from "@apollo/client";
 import {ConditionType, InstrumentsEdge } from "@/gql/graphql";
 
-// const CONDITION_TYPES = {
-//     TECHNICAL_INDICATOR: 'Technical Indicator',
-//     PRICE_ACTION: 'Price Action'
-// } as const;
-//
-// const conditionTypes = ['Technical Indicator', 'Price Action'] as [string, ...string[]]
-// const conditionTypeMapping: { [key: string]: string } = {
-//     'Technical Indicator': 'TECHNICAL_INDICATOR',
-//     'Price Action': 'PRICE_ACTION',
-// };
-
 let indicators: [string,...string[]] = ['RSI'];
 const directions = ['Above', 'Below'] as [string, ...string[]]
 
@@ -60,7 +49,7 @@ const getInstrumentsQuery = graphql(`
         }
     }
 `)
-export const CreateRule = () => {
+export const EditRule = () => {
     const [open, setOpen] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [createRule] = useMutation(createRuleMutation, {onCompleted: ()=> {
@@ -175,7 +164,6 @@ const RuleForm = forwardRef<HTMLFormElement,RuleFormProps>(({className, changeTr
     }
 
     const { errors } = createRuleForm.formState;
-
 
     return (
         <div className={cn(className)}>

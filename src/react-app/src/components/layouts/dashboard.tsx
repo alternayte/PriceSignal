@@ -46,7 +46,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
         <div className="flex items-center gap-4">
           <Link className="flex items-center gap-2 text-lg font-semibold" to="/">
             <CoinsIcon className="h-6 w-6" />
-            <span>Crypto Dashboard</span>
+            <span>Signal Dashboard</span>
           </Link>
         </div>
         <div className="flex items-center gap-4">

@@ -30,13 +30,23 @@ export const createRouter = () =>
             {
                 path: '/rules',
                 lazy: async () => {
-                    const { RulesRoute } = await import('@/routes/rules/rules');
-                    return { Component: RulesRoute };
+                    const {RulesRoute} = await import('@/routes/rules/rules');
+                    return {Component: RulesRoute};
                 },
                 loader: () => {
                     return <div>Loading...</div>;
-                },
+                }
             },
+                    {
+                        path: '/rules/:id',
+                        lazy: async () => {
+                            const {RuleDetail} = await import('@/features/rules/components/rule-detail')
+                            return {Component:RuleDetail}
+                        },
+                        loader: () => {
+                            return <div>Loading Rule...</div>
+                        }
+                    },
             {
                 path: '/symbols/:symbol',
                 lazy: async () => {

@@ -26,7 +26,10 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { graphql } from "@/gql"
-import {useQuery} from "@apollo/client";
+import {useMutation, useQuery} from "@apollo/client";
+import {format} from "date-fns";
+import {Switch} from "@/components/ui/switch";
+import {useNavigate} from "react-router-dom";
 
 const allRulesQuery = graphql(`
 query GetPriceRules($first: Int) {
@@ -39,6 +42,7 @@ query GetPriceRules($first: Int) {
         instrument {
           symbol
         }
+        createdAt
       }
     }
     totalCount
@@ -50,9 +54,32 @@ query GetPriceRules($first: Int) {
 }
 `)
 
+const deleteRuleMutation = graphql(`
+mutation DeletePriceRule($id: UUID!) {
+  deletePriceRule(id: $id) {
+    id
+  }
+}
+`)
 
 export const RulesList = () => {
-    const { data, loading } = useQuery(allRulesQuery, {variables: {first: 10}});
+    const { data, loading ,refetch} = useQuery(allRulesQuery, {variables: {first: 10}});
+    const [deleteRule] = useMutation(deleteRuleMutation,{});
+    const navigate = useNavigate();
+    
+    const handleDeleteRule = async (id: string) => {
+        try {
+            await deleteRule({variables: {id},update: (cache) => {
+                cache.evict({id: `PriceRule:${id}`});
+            }});
+        } catch (e) {
+            console.error(e);
+        }
+    }
+    
+    const handleViewDetail = (id:string) => {
+        navigate(`/rules/${id}`)
+    }
 
     if (loading) return <p>Loading...</p>;
     if (!data) return <p>No data</p>;
@@ -75,9 +102,6 @@ export const RulesList = () => {
                             <TableHead>Name</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="hidden md:table-cell">Symbol</TableHead>
-                            <TableHead className="hidden md:table-cell">
-                                Total Sales
-                            </TableHead>
                             <TableHead className="hidden md:table-cell">Created at</TableHead>
                             <TableHead>
                                 <span className="sr-only">Actions</span>
@@ -99,13 +123,13 @@ export const RulesList = () => {
                                 <TableCell className="font-medium">
                                     {rule.node.name}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className='flex items-center gap-x-2'>
+                                    <Switch id={`rule-${rule.node.id}-status`} />
                                     <Badge variant="outline">Active</Badge>
                                 </TableCell>
                                 <TableCell className="hidden md:table-cell">{rule.node.instrument.symbol}</TableCell>
-                                <TableCell className="hidden md:table-cell">25</TableCell>
                                 <TableCell className="hidden md:table-cell">
-                                    {/*{rule.node.createdAt}*/}
+                                    {format(new Date(rule.node.createdAt), "MMM dd, yyyy")}
                                 </TableCell>
                                 <TableCell>
                                     <DropdownMenu>
@@ -117,8 +141,8 @@ export const RulesList = () => {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                            <DropdownMenuItem>Edit</DropdownMenuItem>
-                                            <DropdownMenuItem>Delete</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={()=> handleViewDetail(rule.node.id)}>View</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={()=> handleDeleteRule(rule.node.id)}>Delete</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>

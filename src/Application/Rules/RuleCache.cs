@@ -5,14 +5,14 @@ namespace Application.Rules;
 
 public class RuleCache
 {
-    private readonly ConcurrentDictionary<long, PriceRule> _rules = new ConcurrentDictionary<long, PriceRule>();
+    private readonly ConcurrentDictionary<long, PriceRule> _rules = new();
 
     public IEnumerable<PriceRule> GetAllRules()
     {
         return _rules.Values;
     }
 
-    public PriceRule GetRule(int ruleId)
+    public PriceRule GetRule(long ruleId)
     {
         _rules.TryGetValue(ruleId, out var rule);
         return rule;
@@ -23,7 +23,7 @@ public class RuleCache
         _rules.AddOrUpdate(rule.Id, rule, (key, oldValue) => rule);
     }
 
-    public void RemoveRule(int ruleId)
+    public void RemoveRule(long ruleId)
     {
         _rules.TryRemove(ruleId, out _);
     }

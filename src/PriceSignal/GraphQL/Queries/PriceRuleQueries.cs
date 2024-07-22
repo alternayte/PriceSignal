@@ -15,5 +15,12 @@ public class PriceRuleQueries
         return dbContext.PriceRules.AsQueryable();
     }
     
+    [UseSingleOrDefault]
+    [UseProjection]
+    public IQueryable<PriceRule> GetPriceRule(AppDbContext dbContext, Guid id)
+    {
+        return dbContext.PriceRules.Where(pr => pr.EntityId == id).AsQueryable();
+    }
+    
 
 }

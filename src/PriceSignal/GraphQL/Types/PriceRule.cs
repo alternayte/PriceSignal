@@ -50,14 +50,17 @@ public class PriceRuleType : ObjectType<PriceRule>
 
 public class PriceRuleInput
 {
+    public  Guid Id { get; set; }
     public required string Name { get; set; }
     public required string Description { get; set; }
     public required Guid InstrumentId { get; set; }
     public ICollection<PriceConditionInput> Conditions { get; set; } = new List<PriceConditionInput>();
 }
 
+
 public class PriceConditionInput
 {
+    public required Guid Id { get; set; }
     public required string ConditionType { get; set; }
     public required decimal Value { get; set; }
     public string? AdditionalValues { get; set; }
