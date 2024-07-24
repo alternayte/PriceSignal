@@ -21,14 +21,15 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import { Input } from "@/components/ui/input";
 import { graphql } from "@/gql";
 import {useMutation, useQuery} from "@apollo/client";
-import {ConditionType, InstrumentsEdge } from "@/gql/graphql";
+import {ConditionType, InstrumentsEdge,PriceRule } from "@/gql/graphql";
+import { AdditionalMetadata } from "../types";
 
-let indicators: [string,...string[]] = ['RSI'];
-const directions = ['Above', 'Below'] as [string, ...string[]]
+const indicators: [string,...string[]] = ['RSI'];
+const directions: [string, ...string[]] = ['Above', 'Below']
 
-const createRuleMutation = graphql(`
-    mutation CreatePriceRule($newRule: PriceRuleInput!) {
-        createPriceRule(input:$newRule) {
+const updateRuleMutation = graphql(`
+    mutation editPriceRule($existingRule: PriceRuleInput!) {
+        updatePriceRule(input:$existingRule) {
             id
             name
             description
@@ -49,20 +50,25 @@ const getInstrumentsQuery = graphql(`
         }
     }
 `)
-export const EditRule = () => {
+
+type EditRuleProps = {
+    data: PriceRule
+}
+export const EditRule = ({data}:EditRuleProps) => {
     const [open, setOpen] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-    const [createRule] = useMutation(createRuleMutation, {onCompleted: ()=> {
+    const [createRule] = useMutation(updateRuleMutation, {onCompleted: ()=> {
         setHasUnsavedChanges(false)
-        setOpen(false)}})
+        setOpen(false)},
+        update:(cache)=> cache.evict({id:`PriceRule:${data.id}`})});
+        // TODO: optimistic update optimisticResponse: {updatePriceRule:data}})
+    
     const formRef = useRef<HTMLFormElement>(null);
     const {loading, error, data:instrumentsData} = useQuery(getInstrumentsQuery,{
         variables: {
             first: 5
         }
     })
-    
-    indicators = ['RSI', 'MACD', 'SMA', 'EMA']
     
     const handleOpenChange = (open: boolean) => {
         if (!open && hasUnsavedChanges) {
@@ -81,11 +87,11 @@ export const EditRule = () => {
         }
     }
     
-    const onSubmit = (data: z.infer<typeof CreateRuleFormSchema>) => {
-        console.log('submitting', data)
+    const onSubmit = (data: z.infer<typeof EditRuleFormSchema>) => {
         createRule({
             variables: {
-                newRule: {
+                existingRule: {
+                    id: data.id,
                     name:data.name,
                     description:data.description!,
                     instrumentId:data.symbol,
@@ -105,16 +111,16 @@ export const EditRule = () => {
     return (
         <Drawer direction='left' open={open} onOpenChange={handleOpenChange} dismissible={false}>
             <DrawerTrigger asChild>
-                <Button>Create Rule</Button>
+                <Button>Edit</Button>
             </DrawerTrigger>
             <DrawerContent className='h-full w-full lg:w-1/2'>
                 <DrawerHeader className='text-left'>
-                    <DrawerTitle>Create Rule</DrawerTitle>
+                    <DrawerTitle>Edit Rule</DrawerTitle>
                     <DrawerDescription>
-                        Create a new rule for your application
+                        Edit rule
                     </DrawerDescription>
                 </DrawerHeader>
-                <RuleForm ref={formRef} className='px-4' changeTracker={setHasUnsavedChanges} indicators={indicators} symbols={instrumentsData?.instruments?.edges || []} submitData={onSubmit}/>
+                <RuleForm ref={formRef} className='px-4' changeTracker={setHasUnsavedChanges} indicators={indicators} symbols={instrumentsData?.instruments?.edges || []} submitData={onSubmit} rule={data}/>
                 <DrawerFooter className='pt-2'>
                     <div className="flex items-center space-x-2">
                         <DrawerClose asChild>
@@ -136,40 +142,58 @@ interface RuleFormProps extends React.ButtonHTMLAttributes<HTMLElement> {
     changeTracker: (value: boolean) => void;
     symbols: InstrumentsEdge[];
     indicators: string[];
-    submitData: (data: z.infer<typeof CreateRuleFormSchema>) => void;
+    submitData: (data: z.infer<typeof EditRuleFormSchema>) => void;
+    rule: PriceRule
 }
 
-const RuleForm = forwardRef<HTMLFormElement,RuleFormProps>(({className, changeTracker, indicators, symbols, submitData},ref) => {
-    const createRuleForm = useForm<z.infer<typeof CreateRuleFormSchema>>({
-        resolver: zodResolver(CreateRuleFormSchema),
-        defaultValues: {},
+
+const RuleForm = forwardRef<HTMLFormElement,RuleFormProps>(({className, changeTracker, indicators, symbols, submitData,rule},ref) => {
+    const mappedConditions = rule.conditions?.edges?.map(c=> {
+        var additional: AdditionalMetadata = JSON.parse(c.node.additionalValues as string)
+        return {
+            conditionType: c.node.conditionType,
+            indicator: additional.name,
+            period: additional.period,
+            direction: additional.direction,
+            threshold: c.node.value
+        }
+    });
+    const editRuleForm = useForm<z.infer<typeof EditRuleFormSchema>>({
+        resolver: zodResolver(EditRuleFormSchema),
+        defaultValues: {
+            id: rule.id,
+            name: rule.name,
+            description: rule.description as string,
+            conditions: mappedConditions,
+            symbol: rule.instrument.id
+        },
     })
     
     const {fields, append, remove } = useFieldArray({
-        control: createRuleForm.control,
+        control: editRuleForm.control,
         name: 'conditions'
     })
 
     useEffect(() => {
-        const subscription = createRuleForm.watch((_values) => {
+        const subscription = editRuleForm.watch((_values) => {
                 changeTracker(true)
             }
         );
         return () => subscription.unsubscribe();
-    }, [createRuleForm.watch]);
+    }, [editRuleForm.watch]);
 
 
-    const onSubmit = (data: z.infer<typeof CreateRuleFormSchema>) => {
+    const onSubmit = (data: z.infer<typeof EditRuleFormSchema>) => {
         submitData(data)
     }
 
-    const { errors } = createRuleForm.formState;
+    const { errors } = editRuleForm.formState;
 
     return (
         <div className={cn(className)}>
-            <Form {...createRuleForm}>
-                <form ref={ref} onSubmit={createRuleForm.handleSubmit(onSubmit)} className='space-y-8'>
-                    <FormField control={createRuleForm.control} name='name'
+            <Form {...editRuleForm}>
+                <form ref={ref} onSubmit={editRuleForm.handleSubmit(onSubmit)} className='space-y-8'>
+                    <FormField control={editRuleForm.control} name='name'
                                render={({field}) => (
                                    <FormItem>
                                        <FormLabel className=''>Name</FormLabel>
@@ -179,7 +203,7 @@ const RuleForm = forwardRef<HTMLFormElement,RuleFormProps>(({className, changeTr
                                    </FormItem>
                                )}
                     />
-                    <FormField control={createRuleForm.control} name='description'
+                    <FormField control={editRuleForm.control} name='description'
                                render={({field}) => (
                                    <FormItem>
                                        <FormLabel className=''>Description</FormLabel>
@@ -189,11 +213,10 @@ const RuleForm = forwardRef<HTMLFormElement,RuleFormProps>(({className, changeTr
                                    </FormItem>
                                )}
                     />
-                    <FormField control={createRuleForm.control} name='symbol'
+                    <FormField control={editRuleForm.control} name='symbol'
                                render={({field}) => (
                                    <FormItem>
                                        <FormLabel className='sr-only'>Symbol</FormLabel>
-                                       {/*<Input {...field} type='text' placeholder='Symbol' className='input'/>*/}
                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                                            <FormControl>
                                                <SelectTrigger>
@@ -213,10 +236,10 @@ const RuleForm = forwardRef<HTMLFormElement,RuleFormProps>(({className, changeTr
                                )}
                     />
                     {fields.map((_field, index)=> (
-                        <div className='space-y-4 flex flex-row flex-wrap gap-3 items-baseline'>
+                        <div key={index} className='space-y-4 flex flex-row flex-wrap gap-3 items-baseline'>
                             <span className='flex-0'>When</span>
                             
-                            <FormField control={createRuleForm.control} name={`conditions.${index}.conditionType`}
+                            <FormField control={editRuleForm.control} name={`conditions.${index}.conditionType`}
                                        render={({field}) => (
                                            <FormItem>
                                                <FormLabel className='sr-only'>Type</FormLabel>
@@ -239,7 +262,7 @@ const RuleForm = forwardRef<HTMLFormElement,RuleFormProps>(({className, changeTr
                                        )}
                             />
                             <span className='flex-0'>has</span>
-                            <FormField control={createRuleForm.control} name={`conditions.${index}.indicator`}
+                            <FormField control={editRuleForm.control} name={`conditions.${index}.indicator`}
                                        render={({field}) => (
                                            <FormItem>
                                                <FormLabel className='sr-only'>Indicator</FormLabel>
@@ -261,7 +284,7 @@ const RuleForm = forwardRef<HTMLFormElement,RuleFormProps>(({className, changeTr
                                            </FormItem>
                                        )}
                             />
-                            <FormField control={createRuleForm.control} name={`conditions.${index}.period`}
+                            <FormField control={editRuleForm.control} name={`conditions.${index}.period`}
                                        render={({ field }) => (
                                            <FormItem>
                                                <FormLabel className='sr-only'>Period</FormLabel>
@@ -271,7 +294,7 @@ const RuleForm = forwardRef<HTMLFormElement,RuleFormProps>(({className, changeTr
                                        )}
                             />
                             <span className='flex-0'>going</span>
-                            <FormField control={createRuleForm.control} name={`conditions.${index}.direction`}
+                            <FormField control={editRuleForm.control} name={`conditions.${index}.direction`}
                                        render={({field}) => (
                                            <FormItem>
                                                <FormLabel className='sr-only'>Direction</FormLabel>
@@ -293,7 +316,7 @@ const RuleForm = forwardRef<HTMLFormElement,RuleFormProps>(({className, changeTr
                                            </FormItem>
                                        )}
                             />
-                            <FormField control={createRuleForm.control} name={`conditions.${index}.threshold`}
+                            <FormField control={editRuleForm.control} name={`conditions.${index}.threshold`}
                                        render={({field}) => (
                                            <FormItem>
                                                <FormLabel className='sr-only'>Threshold</FormLabel>
@@ -319,12 +342,12 @@ const RuleForm = forwardRef<HTMLFormElement,RuleFormProps>(({className, changeTr
     )
 });
 
-const CreateRuleFormSchema = z.object({
+const EditRuleFormSchema = z.object({
+    id: z.string().uuid("Must be a valid id"),
     name: z.string(),
     description: z.string().optional(),
-    symbol: z.string().uuid("Must be a valid identifier"),
+    symbol: z.string(),
     conditions: z.array(z.object({
-        
         conditionType: z.nativeEnum(ConditionType),
         indicator: z.enum(indicators).optional(),
         period: z.coerce.number().int().positive(),

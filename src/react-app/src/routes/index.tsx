@@ -40,7 +40,7 @@ export const createRouter = () =>
                     {
                         path: '/rules/:id',
                         lazy: async () => {
-                            const {RuleDetail} = await import('@/features/rules/components/rule-detail')
+                            const {RuleDetail} = await import('@/routes/rules/rule-detail')
                             return {Component:RuleDetail}
                         },
                         loader: () => {

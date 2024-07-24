@@ -71,6 +71,7 @@ public class PriceRuleInputType : InputObjectType<PriceRuleInput>
     protected override void Configure(IInputObjectTypeDescriptor<PriceRuleInput> descriptor)
     {
         descriptor.BindFieldsExplicitly();
+        descriptor.Field(x => x.Id).Type<NonNullType<IdType>>();
         descriptor.Field(x => x.Name).Type<NonNullType<StringType>>();
         descriptor.Field(x => x.Description).Type<NonNullType<StringType>>();
         descriptor.Field(x => x.InstrumentId).Type<NonNullType<IdType>>();

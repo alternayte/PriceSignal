@@ -23,6 +23,7 @@ import { graphql } from "@/gql";
 import {useMutation, useQuery} from "@apollo/client";
 import {ConditionType, InstrumentsEdge } from "@/gql/graphql";
 
+
 // const CONDITION_TYPES = {
 //     TECHNICAL_INDICATOR: 'Technical Indicator',
 //     PRICE_ACTION: 'Price Action'
@@ -97,6 +98,7 @@ export const CreateRule = () => {
         createRule({
             variables: {
                 newRule: {
+                    id: '0000-0000-0000-0000',
                     name:data.name,
                     description:data.description!,
                     instrumentId:data.symbol,
@@ -205,7 +207,6 @@ const RuleForm = forwardRef<HTMLFormElement,RuleFormProps>(({className, changeTr
                                render={({field}) => (
                                    <FormItem>
                                        <FormLabel className='sr-only'>Symbol</FormLabel>
-                                       {/*<Input {...field} type='text' placeholder='Symbol' className='input'/>*/}
                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                                            <FormControl>
                                                <SelectTrigger>
