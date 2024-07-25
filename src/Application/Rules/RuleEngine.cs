@@ -20,12 +20,6 @@ public class RuleEngine(RuleCache ruleCache, PriceHistoryCache priceHistoryCache
         foreach (var rule in rules)
         {
             session.Insert(rule);
-            // if (EvaluateConditions(price, rule))
-            // {
-            //     
-            //     // Trigger alert or action
-            //     Console.WriteLine($"Rule triggered: {rule.Name}");
-            // }
         }
 
         session.Fire();
@@ -44,48 +38,51 @@ public class RuleEngine(RuleCache ruleCache, PriceHistoryCache priceHistoryCache
 
         foreach (var condition in rule.Conditions)
         {
-            if (condition.ConditionType == "PricePercentage")
+            switch (condition.ConditionType)
             {
-                var additionalData = JsonSerializer.Deserialize<Dictionary<string, string>?>(condition.AdditionalValues);
-                var direction = additionalData["Direction"];
-                var percentage = condition.Value;
-                var timeWindowHours = Convert.ToInt32(additionalData["TimeWindow"]);
-
-                var pastPrice = priceHistory
-                    .Where(p => p.Date >= DateTime.Now.AddHours(-timeWindowHours))
-                    .OrderBy(p => p.Date)
-                    .FirstOrDefault();
-                if (pastPrice == null) return false;
-
-                if (direction == "up" && ((price.Close / pastPrice.Close - 1) * 100) < percentage)
+                case "PricePercentage":
                 {
-                    return false;
-                }
-                else if (direction == "down" && ((1 - price.Close / pastPrice.Close) * 100) < percentage)
-                {
-                    return false;
-                }
-            }
-            else if (condition.ConditionType == "TechnicalIndicator")
-            {
-                var indicatorInputs = JsonSerializer.Deserialize<Dictionary<string, string>?>(condition.AdditionalValues);
-                var indicatorName = indicatorInputs["Name"];
-                var threshold = condition.Value;
+                    var additionalData = JsonSerializer.Deserialize<Dictionary<string, string>?>(condition.AdditionalValues);
+                    var direction = additionalData["Direction"];
+                    var percentage = condition.Value;
+                    var timeWindowHours = Convert.ToInt32(additionalData["TimeWindow"]);
 
-                if (indicatorName == "RSI")
-                {
-                    var period = int.Parse(indicatorInputs["Period"]);
-                    if (priceHistory.Count < period +1 ) return false;
-                    var rsi = priceHistory.GetRsi(period).Last().Rsi;
-                    // var rsi = CalculateRSI(priceHistory, period);
-                    if (rsi <= (double?) threshold)
+                    var pastPrice = priceHistory
+                        .Where(p => p.Date >= DateTime.Now.AddHours(-timeWindowHours)).MinBy(p => p.Date);
+                    if (pastPrice == null) return false;
+
+                    switch (direction)
                     {
-                        return false;
+                        case "up" when (price.Close / pastPrice.Close - 1) * 100 < percentage:
+                        case "down" when (1 - price.Close / pastPrice.Close) * 100 < percentage:
+                            return false;
                     }
-                    else
+
+                    break;
+                }
+                case "TechnicalIndicator":
+                {
+                    var indicatorInputs = JsonSerializer.Deserialize<Dictionary<string, string>?>(condition.AdditionalValues);
+                    var indicatorName = indicatorInputs["Name"];
+                    var threshold = condition.Value;
+
+                    if (indicatorName == "RSI")
                     {
-                        logger.LogInformation($"RSI for {price.Symbol} is {rsi}");
+                        var period = int.Parse(indicatorInputs["Period"]);
+                        if (priceHistory.Count < period +1 ) return false;
+                        var rsi = priceHistory.GetRsi(period).Last().Rsi;
+                        // var rsi = CalculateRSI(priceHistory, period);
+                        if (rsi <= (double?) threshold)
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            logger.LogInformation($"RSI for {price.Symbol} is {rsi}");
+                        }
                     }
+
+                    break;
                 }
             }
             // Add additional condition types as needed

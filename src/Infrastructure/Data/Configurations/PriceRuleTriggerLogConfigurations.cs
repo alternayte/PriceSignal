@@ -1,4 +1,3 @@
-using Domain.Models.NotificationChannel;
 using Domain.Models.PriceRule;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -6,32 +5,30 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations;
 
-public class PriceRuleConfigurations : IEntityTypeConfiguration<PriceRule>
+public class PriceRuleTriggerLogConfigurations : IEntityTypeConfiguration<PriceRuleTriggerLog>
 {
-    public void Configure(EntityTypeBuilder<PriceRule> builder)
+    public void Configure(EntityTypeBuilder<PriceRuleTriggerLog> builder)
     {
         builder.Property(pc => pc.EntityId)
             .HasDefaultValueSql("uuid_generate_v4()")
             .ValueGeneratedOnAdd();
-        
-        builder.Property(pr => pr.Name)
-            .HasMaxLength(255)
-            .IsRequired();
 
-        builder.Property(pr => pr.Description)
-            .HasMaxLength(2000);
-        
-        builder.Property(pr => pr.IsEnabled)
-            .HasDefaultValue(false)
-            .IsRequired();
-        
-        builder.Property(pr => pr.LastTriggeredAt)
+        builder.Property(pr => pr.Price)
+            .HasColumnType("double precision")
             .HasDefaultValue(null);
         
-        builder.Property(pr => pr.NotificationChannel)
-            .HasDefaultValue(NotificationChannelType.none)
-            .HasConversion<string>()
-            .HasColumnType("notification_channel_type")
+        builder.Property(pr => pr.PriceChange)
+            .HasColumnType("double precision")
+            .HasDefaultValue(null);
+        
+        builder.Property(pr => pr.PriceChangePercentage)
+            .HasColumnType("double precision")
+            .HasDefaultValue(null);
+
+        builder.Property(pr => pr.PriceRuleSnapshot)
+            .HasColumnType("jsonb");
+        
+        builder.Property(pr => pr.TriggeredAt)
             .IsRequired();
         
         builder.Property(pr=>pr.CreatedAt)
@@ -45,7 +42,9 @@ public class PriceRuleConfigurations : IEntityTypeConfiguration<PriceRule>
         builder.Property(pr => pr.DeletedAt)
             .HasDefaultValue(null);
 
-        builder.HasMany(r => r.Conditions);
+        builder.HasOne(r => r.PriceRule)
+            .WithMany()
+            .OnDelete(DeleteBehavior.Cascade);
         builder.HasQueryFilter(pr => pr.DeletedAt == null);
     }
 }

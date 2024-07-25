@@ -59,9 +59,7 @@ export const EditRule = ({data}:EditRuleProps) => {
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [createRule] = useMutation(updateRuleMutation, {onCompleted: ()=> {
         setHasUnsavedChanges(false)
-        setOpen(false)},
-        update:(cache)=> cache.evict({id:`PriceRule:${data.id}`})});
-        // TODO: optimistic update optimisticResponse: {updatePriceRule:data}})
+        setOpen(false)}})
     
     const formRef = useRef<HTMLFormElement>(null);
     const {loading, error, data:instrumentsData} = useQuery(getInstrumentsQuery,{
@@ -89,6 +87,12 @@ export const EditRule = ({data}:EditRuleProps) => {
     
     const onSubmit = (data: z.infer<typeof EditRuleFormSchema>) => {
         createRule({
+            optimisticResponse: {
+              updatePriceRule: {
+                  __typename: 'PriceRule', 
+                  ...data
+              },
+            },
             variables: {
                 existingRule: {
                     id: data.id,

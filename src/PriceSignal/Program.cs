@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Application;
 using Application.Price;
 using Application.Rules;
 using Application.Services.Binance;
@@ -35,6 +36,7 @@ builder.Services.AddCors(options =>
 builder.Services
     .AddMemoryCache()
     .AddInfrastructure(builder.Configuration, builder.Environment.IsDevelopment())
+    .AddApplication()
     .AddGraphQLServer()
     .AddType(new UuidType('D'))
     .AddTypeConverter<Guid,string>(from => from.ToString("D"))
@@ -61,19 +63,11 @@ builder.Services
     .UseAutomaticPersistedQueryPipeline()
     .AddInMemoryQueryStorage();
 
-builder.Services.AddSingleton<RuleCache>();
-builder.Services.AddSingleton<PriceHistoryCache>(provider => new PriceHistoryCache(500));
 
-builder.Services.AddSingleton(provider =>
-{
-    var ruleEngineConfig = new RuleEngineConfig(provider);
-    return ruleEngineConfig.CreateSession();
-});
-builder.Services.AddSingleton<RuleEngine>();
 
 if (builder.Configuration.GetSection("Binance:Enabled").Get<bool>())
 {
-    ConcurrentBag<string> symbols = new() {"BTCUSDT", "ETHUSDT"};
+    ConcurrentBag<string> symbols = ["BTCUSDT", "ETHUSDT"];
     builder.Services.AddSingleton(symbols);
     builder.Services.AddHostedService<BinancePairUpdateService>();
     builder.Services.AddSingleton<BinancePriceFetcherService>();

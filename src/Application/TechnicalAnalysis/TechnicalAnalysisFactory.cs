@@ -4,7 +4,7 @@ namespace Application.TechnicalAnalysis;
 
 public class TechnicalAnalysisFactory
 {
-    private readonly IDictionary<string, ITechnicalIndicator> _indicators = new Dictionary<string, ITechnicalIndicator>
+    private readonly Dictionary<string, ITechnicalIndicator> _indicators = new()
     {
         {"RSI", new Indicators.RSI()}
     };

@@ -2,6 +2,7 @@ using System.Reflection;
 using Application.Common.Interfaces;
 using Domain.Models.Exchanges;
 using Domain.Models.Instruments;
+using Domain.Models.NotificationChannel;
 using Domain.Models.PriceRule;
 using Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.HasPostgresExtension("uuid-ossp");
+        builder.HasPostgresEnum<NotificationChannelType>(
+            schema:null, name:"notification_channel_type",nameTranslator:new Npgsql.NameTranslation.NpgsqlSnakeCaseNameTranslator());
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         
         base.OnModelCreating(builder);

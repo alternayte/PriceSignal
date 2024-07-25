@@ -9,3 +9,9 @@ public class PriceCondition : BaseAuditableEntity
     public JsonDocument AdditionalValues { get; set; }
     public PriceRule Rule { get; set; }
 }
+
+public enum ConditionType
+{
+    PricePercentage,
+    TechnicalIndicator
+}
