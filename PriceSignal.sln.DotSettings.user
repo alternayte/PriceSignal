@@ -2,4 +2,7 @@
 	<s:Boolean x:Key="/Default/Dpa/ExcludeFilters/=_002A_003B_002A_003BPriceSignal_002EBackgroundServices_002EBinancePairUpdateService_003B_002A/@EntryIndexedValue">True</s:Boolean>
 	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;
   &lt;Assembly Path="/Users/nathananderson-tennant/.nuget/packages/hotchocolate.types/13.9.4/lib/net8.0/HotChocolate.Types.dll" /&gt;
-&lt;/AssemblyExplorer&gt;</s:String></wpf:ResourceDictionary>
+&lt;/AssemblyExplorer&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e4bea76b_002D5470_002D4d09_002D9459_002Db2e9d6b22f4b/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from &amp;lt;tests&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;Project Location="/Users/nathananderson-tennant/RiderProjects/PriceSignal" Presentation="&amp;lt;tests&amp;gt;" /&gt;
+&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

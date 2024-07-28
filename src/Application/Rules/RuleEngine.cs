@@ -17,21 +17,23 @@ public class RuleEngine(RuleCache ruleCache, PriceHistoryCache priceHistoryCache
         
         var rules = ruleCache.GetAllRules().Where(r => r.Instrument.Symbol == price.Symbol).ToList();
 
-        foreach (var rule in rules)
-        {
-            session.Insert(rule);
-        }
+        session.InsertAll(rules);
+        // foreach (var rule in rules)
+        // {
+        //     session.Insert(rule);
+        // }
 
         session.Fire();
 
         session.Retract(price);
-        foreach (var rule in rules)
-        {
-            session.Retract(rule);
-        }
+        session.RetractAll(rules);
+        // foreach (var rule in rules)
+        // {
+        //     session.Retract(rule);
+        // }
     }
 
-    private bool EvaluateConditions(IPrice price, PriceRule rule)
+    private bool EvaluateConditions(IPrice price, Domain.Models.PriceRule.PriceRule rule)
     {
         var priceHistory = priceHistoryCache.GetPriceHistory(price.Symbol).ToList();
         if (priceHistory.Count == 0) return false;

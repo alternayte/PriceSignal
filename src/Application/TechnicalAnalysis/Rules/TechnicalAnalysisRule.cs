@@ -2,7 +2,9 @@ using System.Text.Json;
 using Application.Common;
 using Application.Common.Interfaces;
 using Application.Price;
+using Domain.Models;
 using Domain.Models.PriceRule;
+using Domain.Models.PriceRule.Events;
 using NRules.Fluent.Dsl;
 using NRules.RuleModel;
 
@@ -11,43 +13,107 @@ namespace Application.TechnicalAnalysis.Rules;
 public class TechnicalAnalysisRule : Rule
 {
     private readonly TechnicalAnalysisFactory _taFactory = new();
+    public PriceHistoryCache _priceHistoryCache;
+    
+    public TechnicalAnalysisRule(PriceHistoryCache priceHistoryCache)
+    {
+        _priceHistoryCache = priceHistoryCache;
+    }
+    
+    public TechnicalAnalysisRule()
+    {
+    }
 
     public override void Define()
     {
         IPrice price = null;
-        PriceRule priceRule = null;
+        Domain.Models.PriceRule.PriceRule priceRule = null;
 
         When()
             .Match<IPrice>(() => price)
-            .Match<PriceRule>(() => priceRule, r => r.Instrument.Symbol == price.Symbol && r.IsEnabled && r.DeletedAt == null);
+            .Exists<Domain.Models.PriceRule.PriceRule>(pr => !pr.HasAttempted)
+            .Match<Domain.Models.PriceRule.PriceRule>(() => priceRule, r => r.Instrument.Symbol == price.Symbol && r.IsEnabled && r.DeletedAt == null && !r.HasAttempted);
 
         Then()
-            .Do(ctx => EvaluateConditions(ctx, price, priceRule));
+            .Do(ctx => EvaluateConditions(ctx, price, priceRule))
+            .Do(ctx => ctx.Update(priceRule));
     }
     
-    private void EvaluateConditions(IContext ctx, IPrice price, PriceRule rule)
+    private void EvaluateConditions(IContext ctx, IPrice price, Domain.Models.PriceRule.PriceRule rule)
     {
-        var priceHistoryCache = ctx.Resolve<PriceHistoryCache>();
-        var notificationService = ctx.Resolve<NotificationService>();
+        try
+        {
+            _priceHistoryCache = ctx.Resolve<PriceHistoryCache>();    
+        }
+        catch (Exception e)
+        {
+            // ignored
+        }
+
 
         var allConditionsMet = true;
         
         foreach (var condition in rule.Conditions)
         {
             bool conditionMet;
+            var threshold = condition.Value;
+            var metadata = JsonSerializer.Deserialize<Dictionary<string, string>>(condition.AdditionalValues.RootElement.GetRawText());
+            var direction = metadata["direction"];
+
 
             switch (condition.ConditionType)
             {
                 case nameof(ConditionType.TechnicalIndicator):
-                    var indicatorInputs = JsonSerializer.Deserialize<Dictionary<string, string>>(condition.AdditionalValues.RootElement.GetRawText());
-                    var indicatorName = indicatorInputs["Name"];
-                    var threshold = condition.Value;
+                    var indicatorName = metadata["name"];
 
                     var indicator = _taFactory.GetIndicator(indicatorName);
-                    var prices = priceHistoryCache.GetPriceHistory(price.Symbol);
-                    var value = indicator.Calculate(prices, indicatorInputs);
+                    var prices = _priceHistoryCache.GetPriceHistory(price.Symbol);
+                    var value = indicator.Calculate(prices, metadata);
                     
-                    conditionMet = value > threshold;
+                    conditionMet = direction switch
+                    {
+                        "Above" => value >= threshold,
+                        "Below" => value <= threshold,
+                        _ => false
+                    };
+                    break;
+                case nameof(ConditionType.Price):
+                    conditionMet = direction switch
+                    {
+                        "Above" => price.Close >= threshold,
+                        "Below" => price.Close <= threshold,
+                        _ => false
+                    };
+                    break;
+                case nameof(ConditionType.PricePercentage):
+                    var previousPrice = _priceHistoryCache.GetPriceHistory(price.Symbol).LastOrDefault();
+                    if (previousPrice == null)
+                    {
+                        conditionMet = false;
+                        break;
+                    }
+                    var percentageChange = (price.Close - previousPrice.Close) / previousPrice.Close * 100;
+                    
+                    conditionMet = direction switch
+                    {
+                        "Above" => percentageChange >= threshold,
+                        "Below" => percentageChange <= threshold,
+                        _ => false
+                    };
+                    break;
+                case nameof(ConditionType.PriceCrossover):
+                    var previousPriceCrossover = _priceHistoryCache.GetPriceHistory(price.Symbol).SkipLast(1).LastOrDefault();
+                    if (previousPriceCrossover == null)
+                    {
+                        conditionMet = false;
+                        break;
+                    }
+                    conditionMet = direction switch
+                    {
+                        "Above" => previousPriceCrossover.Close < threshold && price.Close >= threshold,
+                        "Below" => previousPriceCrossover.Close > threshold && price.Close <= threshold,
+                        _ => false
+                    };
                     break;
                 default:
                     conditionMet = false;
@@ -55,6 +121,7 @@ public class TechnicalAnalysisRule : Rule
             }
 
 
+            rule.HasAttempted = true;
             if (!conditionMet)
             {
                 allConditionsMet = false;
@@ -62,13 +129,14 @@ public class TechnicalAnalysisRule : Rule
             }
             if (allConditionsMet)
             {
-                TriggerAlert(price, rule, notificationService);
+                rule.Trigger(price.Close);
             }
         }
     }
 
-    private void TriggerAlert(IPrice price, PriceRule rule, NotificationService notificationService)
+    private void TriggerAlert(IPrice price, Domain.Models.PriceRule.PriceRule rule, NotificationService notificationService)
     {
+        rule.Trigger(price.Close);
         Task.FromResult(notificationService.SendAsync("1234", $"Rule triggered: {rule.Name} for {price.Symbol}.",
             rule.NotificationChannel));
     }

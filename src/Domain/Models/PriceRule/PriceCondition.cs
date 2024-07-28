@@ -13,5 +13,8 @@ public class PriceCondition : BaseAuditableEntity
 public enum ConditionType
 {
     PricePercentage,
-    TechnicalIndicator
+    Price,
+    PriceAction,
+    PriceCrossover,
+    TechnicalIndicator,
 }

@@ -5,20 +5,20 @@ namespace Application.Rules;
 
 public class RuleCache
 {
-    private readonly ConcurrentDictionary<long, PriceRule> _rules = new();
+    private readonly ConcurrentDictionary<long, Domain.Models.PriceRule.PriceRule> _rules = new();
 
-    public IEnumerable<PriceRule> GetAllRules()
+    public IEnumerable<Domain.Models.PriceRule.PriceRule> GetAllRules()
     {
         return _rules.Values;
     }
 
-    public PriceRule GetRule(long ruleId)
+    public Domain.Models.PriceRule.PriceRule GetRule(long ruleId)
     {
         _rules.TryGetValue(ruleId, out var rule);
         return rule;
     }
 
-    public void AddOrUpdateRule(PriceRule rule)
+    public void AddOrUpdateRule(Domain.Models.PriceRule.PriceRule rule)
     {
         _rules.AddOrUpdate(rule.Id, rule, (key, oldValue) => rule);
     }
@@ -28,7 +28,7 @@ public class RuleCache
         _rules.TryRemove(ruleId, out _);
     }
 
-    public void LoadRules(IEnumerable<PriceRule> rules)
+    public void LoadRules(IEnumerable<Domain.Models.PriceRule.PriceRule> rules)
     {
         _rules.Clear();
         foreach (var rule in rules)

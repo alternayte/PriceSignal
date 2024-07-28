@@ -122,4 +122,27 @@ public class PriceRuleMutations
 
         return priceRule;
     }
+    
+    public async Task<PriceRule> TogglePriceRule(Guid id, AppDbContext dbContext, [Service] RuleCache ruleCache)
+    {
+        var priceRule = await dbContext.PriceRules.FirstOrDefaultAsync(pr => pr.EntityId == id);
+        if (priceRule == null)
+        {
+            throw new InvalidOperationException("Price rule not found");
+        }
+
+        priceRule.IsEnabled = !priceRule.IsEnabled;
+
+        try
+        {
+            dbContext.PriceRules.Update(priceRule);
+            await dbContext.SaveChangesAsync();
+            ruleCache.RemoveRule(priceRule.Id);
+        } catch (Exception e)
+        {
+            throw new InvalidOperationException("Error enabling price rule", e);
+        }
+
+        return priceRule;
+    }
 }

@@ -41,10 +41,10 @@ public class PriceRuleTriggerLogConfigurations : IEntityTypeConfiguration<PriceR
 
         builder.Property(pr => pr.DeletedAt)
             .HasDefaultValue(null);
-
-        builder.HasOne(r => r.PriceRule)
-            .WithMany()
-            .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.Property(pr => pr.PriceRuleSnapshot)
+            .HasColumnType("jsonb");
+        
         builder.HasQueryFilter(pr => pr.DeletedAt == null);
     }
 }

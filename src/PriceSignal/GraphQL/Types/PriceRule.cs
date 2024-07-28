@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Application.Common.Interfaces;
 using Domain.Models.Instruments;
+using Domain.Models.NotificationChannel;
 using Domain.Models.PriceRule;
 using HotChocolate.Types.Pagination;
 using Infrastructure.Data;
@@ -19,6 +20,8 @@ public class PriceRuleType : ObjectType<PriceRule>
         descriptor.Field(x => x.Name).Type<NonNullType<StringType>>();
         descriptor.Field(x => x.Description).Type<StringType>();
         descriptor.Field(x => x.Instrument).Type<NonNullType<InstrumentType>>();
+        descriptor.Field(x => x.IsEnabled).Type<NonNullType<BooleanType>>();
+        descriptor.Field(x => x.NotificationChannel).Type<NonNullType<NotificationChannelTypeType>>();
         descriptor.Field(x => x.Conditions).Type<ListType<NonNullType<PriceConditionType>>>()
             .UsePaging(options: new PagingOptions {IncludeTotalCount = true})
             .UseProjection()
@@ -54,6 +57,8 @@ public class PriceRuleInput
     public required string Name { get; set; }
     public required string Description { get; set; }
     public required Guid InstrumentId { get; set; }
+    public bool IsEnabled { get; set; }
+    public NotificationChannelType NotificationChannel { get; set; }
     public ICollection<PriceConditionInput> Conditions { get; set; } = new List<PriceConditionInput>();
 }
 
@@ -76,6 +81,8 @@ public class PriceRuleInputType : InputObjectType<PriceRuleInput>
         descriptor.Field(x => x.Description).Type<NonNullType<StringType>>();
         descriptor.Field(x => x.InstrumentId).Type<NonNullType<IdType>>();
         descriptor.Field(x => x.Conditions).Type<ListType<PriceConditionInputType>>();
+        descriptor.Field(x => x.IsEnabled).Type<BooleanType>();
+        descriptor.Field(x=> x.NotificationChannel).Type<NotificationChannelTypeType>();
     }
 }
 

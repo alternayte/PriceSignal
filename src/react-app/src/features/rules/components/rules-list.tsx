@@ -28,8 +28,9 @@ import {
 import { graphql } from "@/gql"
 import {useMutation, useQuery} from "@apollo/client";
 import {format} from "date-fns";
-import {Switch} from "@/components/ui/switch";
 import {useNavigate} from "react-router-dom";
+import { RuleToggle } from "./rule-toggle"
+import { PriceRule } from "@/gql/graphql"
 
 const allRulesQuery = graphql(`
 query GetPriceRules($first: Int) {
@@ -37,6 +38,7 @@ query GetPriceRules($first: Int) {
     edges {
       node {
         description
+        isEnabled
         id
         name
         instrument {
@@ -63,7 +65,7 @@ mutation DeletePriceRule($id: UUID!) {
 `)
 
 export const RulesList = () => {
-    const { data, loading ,refetch} = useQuery(allRulesQuery, {variables: {first: 10}});
+    const { data, loading } = useQuery(allRulesQuery, {variables: {first: 10}});
     const [deleteRule] = useMutation(deleteRuleMutation,{});
     const navigate = useNavigate();
     
@@ -124,7 +126,7 @@ export const RulesList = () => {
                                     {rule.node.name}
                                 </TableCell>
                                 <TableCell className='flex items-center gap-x-2'>
-                                    <Switch id={`rule-${rule.node.id}-status`} />
+                                    <RuleToggle rule={rule.node as PriceRule}/>
                                     <Badge variant="outline">Active</Badge>
                                 </TableCell>
                                 <TableCell className="hidden md:table-cell">{rule.node.instrument.symbol}</TableCell>

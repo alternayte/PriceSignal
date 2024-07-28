@@ -1,4 +1,5 @@
-﻿using Application.Common;
+﻿using System.Reflection;
+using Application.Common;
 using Application.Common.Interfaces;
 using Application.Notifications;
 using Application.Price;
@@ -11,6 +12,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        services.AddMediatR(config =>
+        {
+            config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+        });
         services.AddSingleton<RuleCache>();
         services.AddSingleton<PriceHistoryCache>(_ => new PriceHistoryCache());
 

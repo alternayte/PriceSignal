@@ -35,6 +35,11 @@ export type BaseEventFilterInput = {
   or?: InputMaybe<Array<BaseEventFilterInput>>;
 };
 
+export type BooleanOperationFilterInput = {
+  eq?: InputMaybe<Scalars['Boolean']['input']>;
+  neq?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
 /** Information about the offset pagination. */
 export type CollectionSegmentInfo = {
   __typename?: 'CollectionSegmentInfo';
@@ -45,8 +50,10 @@ export type CollectionSegmentInfo = {
 };
 
 export enum ConditionType {
-  PriceChange = 'PRICE_CHANGE',
-  PricePercentChange = 'PRICE_PERCENT_CHANGE',
+  Price = 'PRICE',
+  PriceAction = 'PRICE_ACTION',
+  PriceCrossover = 'PRICE_CROSSOVER',
+  PricePercentage = 'PRICE_PERCENTAGE',
   TechnicalIndicator = 'TECHNICAL_INDICATOR'
 }
 
@@ -306,6 +313,20 @@ export type ListFilterInputTypeOfPriceConditionFilterInput = {
   some?: InputMaybe<PriceConditionFilterInput>;
 };
 
+export type ListFilterInputTypeOfPriceRuleFilterInput = {
+  all?: InputMaybe<PriceRuleFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']['input']>;
+  none?: InputMaybe<PriceRuleFilterInput>;
+  some?: InputMaybe<PriceRuleFilterInput>;
+};
+
+export type ListFilterInputTypeOfSubscriptionFilterInput = {
+  all?: InputMaybe<SubscriptionFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']['input']>;
+  none?: InputMaybe<SubscriptionFilterInput>;
+  some?: InputMaybe<SubscriptionFilterInput>;
+};
+
 export type LongOperationFilterInput = {
   eq?: InputMaybe<Scalars['Long']['input']>;
   gt?: InputMaybe<Scalars['Long']['input']>;
@@ -325,6 +346,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   createPriceRule: PriceRule;
   deletePriceRule: PriceRule;
+  togglePriceRule: PriceRule;
   updatePriceRule: PriceRule;
 };
 
@@ -339,8 +361,29 @@ export type MutationDeletePriceRuleArgs = {
 };
 
 
+export type MutationTogglePriceRuleArgs = {
+  id: Scalars['UUID']['input'];
+};
+
+
 export type MutationUpdatePriceRuleArgs = {
   input: PriceRuleInput;
+};
+
+export enum NotificationChannelType {
+  Email = 'EMAIL',
+  None = 'NONE',
+  PushNotification = 'PUSH_NOTIFICATION',
+  Sms = 'SMS',
+  Telegram = 'TELEGRAM',
+  Webhook = 'WEBHOOK'
+}
+
+export type NotificationChannelTypeOperationFilterInput = {
+  eq?: InputMaybe<NotificationChannelType>;
+  in?: InputMaybe<Array<NotificationChannelType>>;
+  neq?: InputMaybe<NotificationChannelType>;
+  nin?: InputMaybe<Array<NotificationChannelType>>;
 };
 
 /** Information about pagination in a connection. */
@@ -424,7 +467,9 @@ export type PriceRule = {
   description?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   instrument: Instrument;
+  isEnabled: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
+  notificationChannel: NotificationChannelType;
 };
 
 
@@ -446,9 +491,14 @@ export type PriceRuleFilterInput = {
   id?: InputMaybe<LongOperationFilterInput>;
   instrument?: InputMaybe<InstrumentFilterInput>;
   instrumentId?: InputMaybe<LongOperationFilterInput>;
+  isEnabled?: InputMaybe<BooleanOperationFilterInput>;
+  lastTriggeredAt?: InputMaybe<DateTimeOperationFilterInput>;
+  lastTriggeredPrice?: InputMaybe<DecimalOperationFilterInput>;
   modifiedAt?: InputMaybe<DateTimeOperationFilterInput>;
   name?: InputMaybe<StringOperationFilterInput>;
+  notificationChannel?: InputMaybe<NotificationChannelTypeOperationFilterInput>;
   or?: InputMaybe<Array<PriceRuleFilterInput>>;
+  user?: InputMaybe<UserFilterInput>;
 };
 
 export type PriceRuleInput = {
@@ -456,7 +506,9 @@ export type PriceRuleInput = {
   description: Scalars['String']['input'];
   id: Scalars['ID']['input'];
   instrumentId: Scalars['ID']['input'];
+  isEnabled?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
+  notificationChannel?: InputMaybe<NotificationChannelType>;
 };
 
 /** A connection to a list of items. */
@@ -606,6 +658,36 @@ export type SubscriptionOnPriceUpdatedArgs = {
   symbol: Scalars['String']['input'];
 };
 
+export type SubscriptionFilterInput = {
+  and?: InputMaybe<Array<SubscriptionFilterInput>>;
+  cancelAt?: InputMaybe<DateTimeOperationFilterInput>;
+  cancelAtPeriodEnd?: InputMaybe<BooleanOperationFilterInput>;
+  canceledAt?: InputMaybe<DateTimeOperationFilterInput>;
+  createdAt?: InputMaybe<DateTimeOperationFilterInput>;
+  currentPeriodEnd?: InputMaybe<DateTimeOperationFilterInput>;
+  currentPeriodStart?: InputMaybe<DateTimeOperationFilterInput>;
+  endedAt?: InputMaybe<DateTimeOperationFilterInput>;
+  id?: InputMaybe<StringOperationFilterInput>;
+  metadata?: InputMaybe<JsonDocumentFilterInput>;
+  or?: InputMaybe<Array<SubscriptionFilterInput>>;
+  priceId?: InputMaybe<StringOperationFilterInput>;
+  quantity?: InputMaybe<LongOperationFilterInput>;
+  status?: InputMaybe<StringOperationFilterInput>;
+  trialEnd?: InputMaybe<DateTimeOperationFilterInput>;
+  trialStart?: InputMaybe<DateTimeOperationFilterInput>;
+  user?: InputMaybe<UserFilterInput>;
+};
+
+export type UserFilterInput = {
+  and?: InputMaybe<Array<UserFilterInput>>;
+  email?: InputMaybe<StringOperationFilterInput>;
+  id?: InputMaybe<StringOperationFilterInput>;
+  or?: InputMaybe<Array<UserFilterInput>>;
+  priceRules?: InputMaybe<ListFilterInputTypeOfPriceRuleFilterInput>;
+  stripeCustomerId?: InputMaybe<StringOperationFilterInput>;
+  subscriptions?: InputMaybe<ListFilterInputTypeOfSubscriptionFilterInput>;
+};
+
 export type UuidOperationFilterInput = {
   eq?: InputMaybe<Scalars['UUID']['input']>;
   gt?: InputMaybe<Scalars['UUID']['input']>;
@@ -629,6 +711,17 @@ export type GetExchangesQueryVariables = Exact<{
 export type GetExchangesQuery = { __typename?: 'Query', exchanges?: { __typename?: 'ExchangesCollectionSegment', totalCount: number, items?: Array<{ __typename?: 'Exchange', name: string, description?: string | null }> | null } | null };
 
 export type PriceItemFragment = { __typename?: 'Price', bucket: any, close: any, symbol: string, volume?: any | null } & { ' $fragmentName'?: 'PriceItemFragment' };
+
+export type GetFocusedPriceLineQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetFocusedPriceLineQuery = { __typename?: 'Query', ETH?: { __typename?: 'PricesConnection', edges?: Array<{ __typename?: 'PricesEdge', node: (
+        { __typename?: 'Price' }
+        & { ' $fragmentRefs'?: { 'PriceItemFragment': PriceItemFragment } }
+      ) }> | null } | null, BTC?: { __typename?: 'PricesConnection', edges?: Array<{ __typename?: 'PricesEdge', node: (
+        { __typename?: 'Price' }
+        & { ' $fragmentRefs'?: { 'PriceItemFragment': PriceItemFragment } }
+      ) }> | null } | null };
 
 export type GetFocusedPricesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -662,12 +755,19 @@ export type EditPriceRuleMutationVariables = Exact<{
 
 export type EditPriceRuleMutation = { __typename?: 'Mutation', updatePriceRule: { __typename?: 'PriceRule', id: string, name: string, description?: string | null } };
 
+export type ToggleRuleStatusMutationVariables = Exact<{
+  id: Scalars['UUID']['input'];
+}>;
+
+
+export type ToggleRuleStatusMutation = { __typename?: 'Mutation', togglePriceRule: { __typename?: 'PriceRule', id: string, isEnabled: boolean } };
+
 export type GetPriceRulesQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GetPriceRulesQuery = { __typename?: 'Query', priceRules?: { __typename?: 'PriceRulesConnection', totalCount: number, edges?: Array<{ __typename?: 'PriceRulesEdge', node: { __typename?: 'PriceRule', description?: string | null, id: string, name: string, createdAt: any, instrument: { __typename?: 'Instrument', symbol: string } } }> | null, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean } } | null };
+export type GetPriceRulesQuery = { __typename?: 'Query', priceRules?: { __typename?: 'PriceRulesConnection', totalCount: number, edges?: Array<{ __typename?: 'PriceRulesEdge', node: { __typename?: 'PriceRule', description?: string | null, isEnabled: boolean, id: string, name: string, createdAt: any, instrument: { __typename?: 'Instrument', symbol: string } } }> | null, pageInfo: { __typename?: 'PageInfo', hasPreviousPage: boolean, hasNextPage: boolean } } | null };
 
 export type DeletePriceRuleMutationVariables = Exact<{
   id: Scalars['UUID']['input'];
@@ -700,11 +800,13 @@ export type SubscribeToPricesForSymbolSubscription = { __typename?: 'Subscriptio
 
 export const PriceItemFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PriceItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Price"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"close"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"volume"}}]}}]} as unknown as DocumentNode<PriceItemFragment, unknown>;
 export const GetExchangesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetExchanges"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"take"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"exchanges"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"take"},"value":{"kind":"Variable","name":{"kind":"Name","value":"take"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}}]}}]} as unknown as DocumentNode<GetExchangesQuery, GetExchangesQueryVariables>;
+export const GetFocusedPriceLineDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetFocusedPriceLine"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"ETH"},"name":{"kind":"Name","value":"prices"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"last"},"value":{"kind":"IntValue","value":"500"}},{"kind":"Argument","name":{"kind":"Name","value":"interval"},"value":{"kind":"EnumValue","value":"ONE_HOUR"}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"symbol"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"eq"},"value":{"kind":"StringValue","value":"ETHUSDT","block":false}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PriceItem"}}]}}]}}]}},{"kind":"Field","alias":{"kind":"Name","value":"BTC"},"name":{"kind":"Name","value":"prices"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"last"},"value":{"kind":"IntValue","value":"500"}},{"kind":"Argument","name":{"kind":"Name","value":"interval"},"value":{"kind":"EnumValue","value":"ONE_HOUR"}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"symbol"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"eq"},"value":{"kind":"StringValue","value":"BTCUSDT","block":false}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PriceItem"}}]}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PriceItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Price"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"close"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"volume"}}]}}]} as unknown as DocumentNode<GetFocusedPriceLineQuery, GetFocusedPriceLineQueryVariables>;
 export const GetFocusedPricesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetFocusedPrices"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"ETH"},"name":{"kind":"Name","value":"prices"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"last"},"value":{"kind":"IntValue","value":"1"}},{"kind":"Argument","name":{"kind":"Name","value":"interval"},"value":{"kind":"EnumValue","value":"ONE_MIN"}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"symbol"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"eq"},"value":{"kind":"StringValue","value":"ETHUSDT","block":false}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PriceItem"}}]}}]}}]}},{"kind":"Field","alias":{"kind":"Name","value":"BTC"},"name":{"kind":"Name","value":"prices"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"last"},"value":{"kind":"IntValue","value":"1"}},{"kind":"Argument","name":{"kind":"Name","value":"interval"},"value":{"kind":"EnumValue","value":"ONE_MIN"}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"symbol"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"eq"},"value":{"kind":"StringValue","value":"BTCUSDT","block":false}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PriceItem"}}]}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PriceItem"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Price"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"close"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"volume"}}]}}]} as unknown as DocumentNode<GetFocusedPricesQuery, GetFocusedPricesQueryVariables>;
 export const CreatePriceRuleDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreatePriceRule"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newRule"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PriceRuleInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createPriceRule"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newRule"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}}]} as unknown as DocumentNode<CreatePriceRuleMutation, CreatePriceRuleMutationVariables>;
 export const GetInstrumentsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetInstruments"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"instruments"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetInstrumentsQuery, GetInstrumentsQueryVariables>;
 export const EditPriceRuleDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"editPriceRule"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"existingRule"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PriceRuleInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updatePriceRule"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"existingRule"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}}]} as unknown as DocumentNode<EditPriceRuleMutation, EditPriceRuleMutationVariables>;
-export const GetPriceRulesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetPriceRules"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"priceRules"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"instrument"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"symbol"}}]}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasPreviousPage"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}}]} as unknown as DocumentNode<GetPriceRulesQuery, GetPriceRulesQueryVariables>;
+export const ToggleRuleStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ToggleRuleStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"togglePriceRule"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"isEnabled"}}]}}]}}]} as unknown as DocumentNode<ToggleRuleStatusMutation, ToggleRuleStatusMutationVariables>;
+export const GetPriceRulesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetPriceRules"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"priceRules"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"isEnabled"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"instrument"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"symbol"}}]}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasPreviousPage"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}}]} as unknown as DocumentNode<GetPriceRulesQuery, GetPriceRulesQueryVariables>;
 export const DeletePriceRuleDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeletePriceRule"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deletePriceRule"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<DeletePriceRuleMutation, DeletePriceRuleMutationVariables>;
 export const GetPriceRuleDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetPriceRule"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"priceRule"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"instrument"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}}]}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"conditions"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"10"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"additionalValues"}},{"kind":"Field","name":{"kind":"Name","value":"conditionType"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetPriceRuleQuery, GetPriceRuleQueryVariables>;
 export const GetPricesForSymbolDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetPricesForSymbol"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"symbol"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"last"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"prices"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"last"},"value":{"kind":"Variable","name":{"kind":"Name","value":"last"}}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"symbol"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"symbol"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"interval"},"value":{"kind":"EnumValue","value":"ONE_MIN"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"timestamp"},"name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"close"}},{"kind":"Field","name":{"kind":"Name","value":"high"}},{"kind":"Field","name":{"kind":"Name","value":"low"}},{"kind":"Field","name":{"kind":"Name","value":"open"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"volume"}}]}}]}}]}}]} as unknown as DocumentNode<GetPricesForSymbolQuery, GetPricesForSymbolQueryVariables>;

@@ -27,13 +27,15 @@ public class PriceRuleConfigurations : IEntityTypeConfiguration<PriceRule>
         
         builder.Property(pr => pr.LastTriggeredAt)
             .HasDefaultValue(null);
-        
+
         builder.Property(pr => pr.NotificationChannel)
             .HasDefaultValue(NotificationChannelType.none)
-            .HasConversion<string>()
             .HasColumnType("notification_channel_type")
+            
             .IsRequired();
-        
+            // .HasConversion(v => v.ToString(),
+            //     v => (NotificationChannelType) Enum.Parse(typeof(NotificationChannelType), v, true));
+            //
         builder.Property(pr=>pr.CreatedAt)
             .HasDefaultValueSql("now()")
             .ValueGeneratedOnAdd();
@@ -43,6 +45,10 @@ public class PriceRuleConfigurations : IEntityTypeConfiguration<PriceRule>
             .ValueGeneratedOnUpdate();
 
         builder.Property(pr => pr.DeletedAt)
+            .HasDefaultValue(null);
+
+        builder.Property(pr => pr.LastTriggeredPrice)
+            .HasColumnType("double precision")
             .HasDefaultValue(null);
 
         builder.HasMany(r => r.Conditions);

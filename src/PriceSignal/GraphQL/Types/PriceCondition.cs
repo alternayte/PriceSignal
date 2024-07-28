@@ -36,20 +36,16 @@ public class PriceConditionType : ObjectType<PriceCondition>
 //     }
 // }
 
-public enum ConditionType
-{
-    PricePercentChange,
-    PriceChange,
-    TechnicalIndicator,
-}
 
 public class ConditionTypeType : EnumType<ConditionType>
 {
     protected override void Configure(IEnumTypeDescriptor<ConditionType> descriptor)
     {
         descriptor.BindValuesExplicitly();
-        descriptor.Value(ConditionType.PriceChange).Name("PRICE_CHANGE");
-        descriptor.Value(ConditionType.PricePercentChange).Name("PRICE_PERCENT_CHANGE");
+        descriptor.Value(ConditionType.PricePercentage).Name("PRICE_PERCENTAGE");
+        descriptor.Value(ConditionType.Price).Name("PRICE");
+        descriptor.Value(ConditionType.PriceAction).Name("PRICE_ACTION");
+        descriptor.Value(ConditionType.PriceCrossover).Name("PRICE_CROSSOVER");
         descriptor.Value(ConditionType.TechnicalIndicator).Name("TECHNICAL_INDICATOR");
     }
 }

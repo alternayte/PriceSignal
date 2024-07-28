@@ -1,5 +1,6 @@
 ﻿using Application.Common.Interfaces;
 using Application.Services.Binance;
+using Domain.Models.NotificationChannel;
 using Infrastructure.Data;
 using Infrastructure.Data.Interceptors;
 using Infrastructure.Providers;
@@ -22,17 +23,23 @@ public static class DependencyInjection
         
         if (isDevelopment)
         {
+            var dataSourceBuilder = new NpgsqlDataSourceBuilder(configuration.GetConnectionString("PriceSignalDB"));
+            dataSourceBuilder.MapEnum<NotificationChannelType>();
+            var dataSource = dataSourceBuilder.Build();
             services.AddDbContextFactory<AppDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("PriceSignalDB")).UseSnakeCaseNamingConvention());
+                options.UseNpgsql(dataSource).UseSnakeCaseNamingConvention());
         }
         else
         {
-            
-
             var postgresUri = File.ReadAllText("/app/secrets/uri");
             var connectionString = ConvertToNpgsqlConnectionString(postgresUri);
+            var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+            dataSourceBuilder.MapEnum<NotificationChannelType>();
+            var dataSource = dataSourceBuilder.Build();
             services.AddDbContextFactory<AppDbContext>(options =>
-                options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
+            {
+                options.UseNpgsql(dataSource).UseSnakeCaseNamingConvention();
+            });
         }
         
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();

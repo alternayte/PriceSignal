@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChartIcon, DollarSignIcon, LineChart } from 'lucide-react';
 import { FocusedPricesList } from './focused-prices-list';
+import { PriceChartSimple } from './price-chart-simple';
+import { FocusedPricesCharts } from './focused-prices-charts';
 
 export const PriceSummary = () => {
   return (
@@ -19,24 +21,10 @@ export const PriceSummary = () => {
         <FocusedPricesList />
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Bitcoin Price Chart</CardTitle>
-            <BarChartIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-          </CardHeader>
-          <CardContent>
-            <LineChart className="aspect-[9/4]" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Ethereum Price Chart</CardTitle>
-            <BarChartIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-          </CardHeader>
-          <CardContent>
-            <LineChart className="aspect-[9/4]" />
-          </CardContent>
-        </Card>
+          <FocusedPricesCharts/>
+            {/*<PriceChartSimple title="BTC"/>*/}
+            {/*<PriceChartSimple title="ETH"/>*/}
+
       </div>
     </>
   );

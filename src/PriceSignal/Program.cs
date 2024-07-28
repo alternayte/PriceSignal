@@ -35,8 +35,8 @@ builder.Services.AddCors(options =>
 
 builder.Services
     .AddMemoryCache()
-    .AddInfrastructure(builder.Configuration, builder.Environment.IsDevelopment())
     .AddApplication()
+    .AddInfrastructure(builder.Configuration, builder.Environment.IsDevelopment())
     .AddGraphQLServer()
     .AddType(new UuidType('D'))
     .AddTypeConverter<Guid,string>(from => from.ToString("D"))
@@ -81,7 +81,7 @@ if (builder.Configuration.GetSection("Binance:Enabled").Get<bool>())
         using var scope = provider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         
-        ruleCache.LoadRules(dbContext.PriceRules.Include(pr=>pr.Conditions).Include(pr=>pr.Instrument).ToList());
+        ruleCache.LoadRules(dbContext.PriceRules.Where(r=>r.IsEnabled).Include(pr=>pr.Conditions).Include(pr=>pr.Instrument).ToList());
         return provider.GetRequiredService<BinancePriceFetcherService>();
     });
     builder.Services.AddHostedService<BinanceProcessingService>();
