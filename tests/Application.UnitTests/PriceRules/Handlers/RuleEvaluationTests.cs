@@ -57,7 +57,7 @@ public class RuleEvaluationTests : BaseRulesTestFixture
         _priceHistoryCache = priceHistoryCache;
         var logger = new Logger<PriceRuleNotificationRule>(new LoggerFactory());
         Setup.Rule(new TechnicalAnalysisRule(priceHistoryCache));
-        Setup.Rule(new PriceRuleNotificationRule(logger));
+        Setup.Rule(new PriceRuleNotificationRule(logger, null, null));
         // Setup.Rule<PriceRuleNotificationRule>();
     }
 

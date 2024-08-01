@@ -52,6 +52,7 @@ public class PriceRuleConfigurations : IEntityTypeConfiguration<PriceRule>
             .HasDefaultValue(null);
 
         builder.HasMany(r => r.Conditions);
+        builder.HasMany(r => r.ActivationLogs);
         builder.HasQueryFilter(pr => pr.DeletedAt == null);
     }
 }

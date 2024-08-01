@@ -62,16 +62,20 @@ public interface IBinanceApi
         foreach (var item in result)
         {
             var data = JsonNode.Parse(item.ToString()).AsArray();
-            
-            var price = new InstrumentPrice
+
+            for (var i = 1; i < 5; i++)
             {
-                Symbol = @params.Symbol,
-                Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(data[0].GetValue<long>()),
-                Price = decimal.Parse(data[4].GetValue<string>()),
-                Volume = decimal.Parse(data[5].GetValue<string>()),
-                Quantity = data[8].GetValue<long>(),
-            };
-            prices.Add(price);
+                var price = new InstrumentPrice
+                {
+                    Symbol = @params.Symbol,
+                    Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(data[0].GetValue<long>()),
+                    Price = decimal.Parse(data[i].GetValue<string>()),
+                    Volume = decimal.Parse(data[5].GetValue<string>()),
+                    Quantity = data[8].GetValue<long>(),
+                };
+                prices.Add(price);
+            }
+
         }
         return prices;
     }

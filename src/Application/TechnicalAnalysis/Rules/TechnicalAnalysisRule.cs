@@ -57,14 +57,14 @@ public class TechnicalAnalysisRule : Rule
         {
             bool conditionMet;
             var threshold = condition.Value;
-            var metadata = JsonSerializer.Deserialize<Dictionary<string, string>>(condition.AdditionalValues.RootElement.GetRawText());
-            var direction = metadata["direction"];
+            var metadata = condition.AdditionalValues.RootElement;
+            var direction = metadata.GetProperty("direction").GetString();
 
 
             switch (condition.ConditionType)
             {
                 case nameof(ConditionType.TechnicalIndicator):
-                    var indicatorName = metadata["name"];
+                    var indicatorName = metadata.GetProperty("name").GetString();
 
                     var indicator = _taFactory.GetIndicator(indicatorName);
                     var prices = _priceHistoryCache.GetPriceHistory(price.Symbol);

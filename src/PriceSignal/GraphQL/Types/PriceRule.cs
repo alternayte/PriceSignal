@@ -30,6 +30,14 @@ public class PriceRuleType : ObjectType<PriceRule>
                 var rule = context.Parent<PriceRule>();
                 return context.Services.GetRequiredService<IPriceConditionsOnPriceRuleDataLoader>().LoadAsync(rule.EntityId);
             });
+        descriptor.Field(x=>x.ActivationLogs).Type<ListType<PriceRuleTriggerLogType>>()
+            .UsePaging(options: new PagingOptions {IncludeTotalCount = true})
+            .UseProjection()
+            .Resolve(context =>
+            {
+                var rule = context.Parent<PriceRule>();
+                return context.Services.GetRequiredService<IPriceRuleTriggerLogsDataLoader>().LoadAsync(rule.EntityId);
+            });
         descriptor.Field(x=>x.CreatedAt).Type<NonNullType<DateTimeType>>();
         
     }
@@ -48,6 +56,25 @@ public class PriceRuleType : ObjectType<PriceRule>
             Value = c.Value,
             AdditionalValues = c.AdditionalValues
         })).ToLookup(x => x.Rule.EntityId);
+    }
+    
+    [DataLoader]
+    internal static async Task<ILookup<Guid,PriceRuleTriggerLog>> GetPriceRuleTriggerLogsAsync(IReadOnlyList<Guid> priceRuleIds, 
+        AppDbContext dbContext, CancellationToken cancellationToken)
+    {
+        var logs = dbContext.PriceRules.Include(x=>x.ActivationLogs).AsQueryable()
+            .Where(x => priceRuleIds.Contains(x.EntityId));
+        
+        return logs.SelectMany(x => x.ActivationLogs.Select(l => new PriceRuleTriggerLog()
+        {
+            EntityId = l.EntityId,
+            PriceRule = x,
+            TriggeredAt = l.TriggeredAt,
+            Price = l.Price,
+            PriceChange = l.PriceChange,
+            PriceChangePercentage = l.PriceChangePercentage,
+            PriceRuleSnapshot = l.PriceRuleSnapshot
+        })).ToLookup(x => x.PriceRule.EntityId);
     }
 }
 

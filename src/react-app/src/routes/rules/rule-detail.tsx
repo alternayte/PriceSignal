@@ -1,7 +1,7 @@
 import { graphql } from "@/gql";
 import {useQuery} from "@apollo/client";
 import {redirect, useParams} from "react-router-dom";
-import {ConditionType,PriceRule} from '@/gql/graphql'
+import {ActivationLogsEdge, ConditionType,PriceRule} from '@/gql/graphql'
 import { AdditionalMetadata } from "@/features/rules/types";
 import { EditRule } from "@/features/rules/components/edit-rule";
 import { ContentLayout } from "@/components/layouts/content";
@@ -12,6 +12,13 @@ import {Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+export const ActivationLog = graphql(`
+  fragment ActivationLog on PriceRuleTriggerLog {
+    id
+    triggeredAt
+    price
+  }
+`)
 
 const ruleDetailQuery = graphql(`
 query GetPriceRule($id: UUID!) {
@@ -24,6 +31,13 @@ query GetPriceRule($id: UUID!) {
       symbol
     }
     createdAt
+    activationLogs (first: 10) {
+      edges {
+        node {
+            ...ActivationLog
+        }
+      }
+    }
     conditions(first: 10) {
       totalCount
       edges {
@@ -79,13 +93,13 @@ export const RuleDetail = () => {
                     </CardHeader>
                     <CardContent>
                         <div className="grid gap-6">
-                            <div className="grid gap-3">
+                            <div className="grid gap-0">
                                 {data.priceRule.conditions?.edges?.map((c, idx) => {
                                     var additional: AdditionalMetadata = JSON.parse(c.node.additionalValues as string)
 
                                     return (
                                         <div key={idx}>
-                                            <div className='space-y-4 flex flex-row flex-wrap gap-3 items-baseline'>
+                                            <div className='space-y-0 flex flex-row flex-wrap gap-3 items-baseline'>
                                                 <span className='flex-0'>When</span>
                                                 <span className='text-blue-700'>{ResolveConditionType(c.node.conditionType)}</span>
                                                 <span className='flex-0'>has</span>
@@ -122,7 +136,7 @@ export const RuleDetail = () => {
                                         <TabsTrigger value="chart">Activity Chart</TabsTrigger>
                                     </TabsList>
                                     <TabsContent value="log">
-                                        <RuleActivityLog id={id!}/>
+                                        <RuleActivityLog data={data.priceRule.activationLogs?.edges as ActivationLogsEdge[]}/>
                                     </TabsContent>
                                     <TabsContent value="chart">
                                         <RuleActivationChart id={id!}/>

@@ -20,43 +20,42 @@ public static class DependencyInjection
         bool isDevelopment)
     {
         services.AddSingleton(TimeProvider.System);
-        
+
+        string connectionString;
         if (isDevelopment)
         {
-            var dataSourceBuilder = new NpgsqlDataSourceBuilder(configuration.GetConnectionString("PriceSignalDB"));
-            dataSourceBuilder.MapEnum<NotificationChannelType>();
-            var dataSource = dataSourceBuilder.Build();
-            services.AddDbContextFactory<AppDbContext>(options =>
-                options.UseNpgsql(dataSource).UseSnakeCaseNamingConvention());
+            connectionString = configuration.GetConnectionString("PriceSignalDB") ??
+                             throw new InvalidOperationException("Connection string not found");
         }
         else
         {
-            var postgresUri = File.ReadAllText("/app/secrets/uri");
-            var connectionString = ConvertToNpgsqlConnectionString(postgresUri);
-            var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
-            dataSourceBuilder.MapEnum<NotificationChannelType>();
-            var dataSource = dataSourceBuilder.Build();
-            services.AddDbContextFactory<AppDbContext>(options =>
-            {
-                options.UseNpgsql(dataSource).UseSnakeCaseNamingConvention();
-            });
+            connectionString = ConvertToNpgsqlConnectionString(File.ReadAllText("/app/secrets/uri"));
         }
         
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+        dataSourceBuilder.MapEnum<NotificationChannelType>();
+        var dataSource = dataSourceBuilder.Build();
+        services.AddDbContext<IAppDbContext,AppDbContext>((sp,options) =>
+        {
+            options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
+            options.UseNpgsql(dataSource).UseSnakeCaseNamingConvention();
+        });
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
 
+        
         var binanceWebsocketUrl = configuration.GetSection("Binance:WebsocketUrl").Value ?? throw new InvalidOperationException();
-
         services.AddSingleton<IWebsocketClientProvider>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<WebsocketClientProvider>>();
             return new WebsocketClientProvider(binanceWebsocketUrl, logger);
         });
-
+        
         services.AddRefitClient<IBinanceApi>()
             .ConfigureHttpClient(c =>
                 c.BaseAddress = new Uri(configuration.GetSection("Binance:ApiUrl").Value ??
                                         throw new InvalidOperationException()))
             .AddPolicyHandler(HttpPolicyExtensions.GetRateLimitPolicy());
+
 
         return services;
     }

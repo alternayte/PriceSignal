@@ -18,6 +18,8 @@ public class PriceRule : BaseAuditableEntity
     public ICollection<PriceCondition> Conditions { get; set; } = new List<PriceCondition>();
     public User.User? User { get; set; }
     
+    public ICollection<PriceRuleTriggerLog> ActivationLogs { get; set; } = new List<PriceRuleTriggerLog>();
+    
     [NotMapped]
     public bool HasAttempted { get; set; } = false;
     
@@ -25,7 +27,11 @@ public class PriceRule : BaseAuditableEntity
     {
         LastTriggeredPrice = price;
         LastTriggeredAt = DateTime.UtcNow;
-        AddEvent(new PriceRuleTriggeredEvent(this));
+        if (Events.Count == 0)
+        {
+            AddEvent(new PriceRuleTriggeredEvent(this));
+        }
+        
     }
 }
 

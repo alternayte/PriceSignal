@@ -15,7 +15,10 @@ public class RuleEngineConfig
     public RuleEngineConfig(IServiceProvider serviceProvider)
     {
         var repository = new RuleRepository();
-        repository.Load(x => x.From(typeof(TechnicalAnalysisRule).Assembly));
+        repository.Load(x =>
+        {
+            x.From(typeof(TechnicalAnalysisRule).Assembly);
+        });
 
         _sessionFactory = repository.Compile();
 

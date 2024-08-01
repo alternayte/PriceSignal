@@ -137,7 +137,7 @@ public class PriceRuleMutations
         {
             dbContext.PriceRules.Update(priceRule);
             await dbContext.SaveChangesAsync();
-            ruleCache.RemoveRule(priceRule.Id);
+            ruleCache.AddOrUpdateRule(priceRule);
         } catch (Exception e)
         {
             throw new InvalidOperationException("Error enabling price rule", e);

@@ -1,18 +1,19 @@
 import { ContentLayout } from '@/components/layouts/content';
+import { MAX_SLICE_SIZE } from '@/constants';
 import { PricesChart } from '@/features/prices/components/prices-chart';
 import { graphql } from '@/gql';
-import { Price } from '@/gql/graphql';
+import { Price, PriceInterval } from '@/gql/graphql';
 import { useQuery } from '@apollo/client';
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const getPricesForSymbolQuery = graphql(`
-  query GetPricesForSymbol($symbol: String!,$last: Int!) {
+  query GetPricesForSymbol($symbol: String!,$last: Int!, $interval: PriceInterval!) {
     prices(
       last: $last
       where: { symbol: { eq: $symbol } }
-      # order: { bucket: DESC }
-      interval: ONE_MIN
+      order: { bucket: ASC }
+      interval: $interval
     ) {
       nodes {
         timestamp: bucket
@@ -46,12 +47,12 @@ export const SymbolRoute = () => {
   const navigate = useNavigate();
   const symbol = params.symbol as string;
 
-  const { data, loading, subscribeToMore } = useQuery(getPricesForSymbolQuery, { variables: { symbol, last:500 } });
+  const { data, loading, subscribeToMore } = useQuery(getPricesForSymbolQuery, { variables: { symbol, last:MAX_SLICE_SIZE , interval: PriceInterval.OneMin} });
 
   useEffect(() => {
     const unsubscribe = subscribeToMore<Price>({
       document: subscribeToPricesForSymbol,
-      variables: { symbol,last:500 },
+      variables: { symbol,last:MAX_SLICE_SIZE, interval: PriceInterval.OneMin },
       updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) {
           return {
@@ -73,6 +74,9 @@ export const SymbolRoute = () => {
           volume: newData.volume,
         };
         const newPrices = [...(prev?.prices?.nodes || []), newPrice];
+        if (newPrices.length > MAX_SLICE_SIZE) {
+          newPrices.shift()
+        }
         return {
           prices: {
             __typename: 'PricesConnection',

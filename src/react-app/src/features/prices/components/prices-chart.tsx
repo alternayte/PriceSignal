@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { init, dispose, KLineData, Chart } from 'klinecharts'
+import { MAX_SLICE_SIZE } from '@/constants'
 
 const CHART_ID = 'chart'
 
@@ -16,7 +17,7 @@ export const PricesChart = ({data}:Props) => {
         chart.current = init(CHART_ID)
         chart.current?.applyNewData(data)
         chart.current?.createIndicator('RSI',true,{id:CHART_ID})
-        
+        console.log('initial load')
         return () => {
             dispose(CHART_ID)
         }

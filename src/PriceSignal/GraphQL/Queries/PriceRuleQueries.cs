@@ -22,5 +22,13 @@ public class PriceRuleQueries
         return dbContext.PriceRules.Where(pr => pr.EntityId == id).AsQueryable();
     }
     
+    
+    // [UsePaging(IncludeTotalCount = true)]
+    // [UseProjection]
+    // [UseFiltering]
+    // public IQueryable<PriceRuleTriggerLog> GetPriceRuleActivationLogs(AppDbContext dbContext)
+    // {
+    //     return dbContext.PriceRuleTriggerLogs.AsQueryable();
+    // }
 
 }

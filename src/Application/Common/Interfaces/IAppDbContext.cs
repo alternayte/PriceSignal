@@ -14,4 +14,5 @@ public interface IAppDbContext
     public DbSet<Domain.Models.PriceRule.PriceRule> PriceRules { get;  }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken));
+    int SaveChanges();
 }

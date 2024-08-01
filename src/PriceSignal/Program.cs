@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using PriceSignal.BackgroundServices;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Logging.AddConsole();
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -51,7 +51,7 @@ builder.Services
     })
     .InitializeOnStartup()
     .AddAuthorization()
-    .RegisterDbContext<AppDbContext>(DbContextKind.Pooled)
+    .RegisterDbContext<AppDbContext>(DbContextKind.Synchronized)
     .AddQueryType()
     .AddMutationType()
     .AddSubscriptionType()
@@ -76,10 +76,11 @@ if (builder.Configuration.GetSection("Binance:Enabled").Get<bool>())
     {
         var ruleCache = provider.GetRequiredService<RuleCache>();
         var priceHistoryCache = provider.GetRequiredService<PriceHistoryCache>();
-        var ruleEngine = provider.GetRequiredService<RuleEngine>();
+        
         
         using var scope = provider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var ruleEngine = scope.ServiceProvider.GetRequiredService<RuleEngine>();
         
         ruleCache.LoadRules(dbContext.PriceRules.Where(r=>r.IsEnabled).Include(pr=>pr.Conditions).Include(pr=>pr.Instrument).ToList());
         return provider.GetRequiredService<BinancePriceFetcherService>();

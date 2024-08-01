@@ -3,7 +3,10 @@ using Application.Common;
 using Application.Common.Interfaces;
 using Application.Notifications;
 using Application.Price;
+using Application.PriceRule.EventHandlers;
 using Application.Rules;
+using Domain.Models.PriceRule.Events;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;
@@ -16,6 +19,7 @@ public static class DependencyInjection
         {
             config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
         });
+        // services.AddTransient<INotificationHandler<PriceRuleTriggeredEvent>, PriceRuleTriggeredEventHandler>();
         services.AddSingleton<RuleCache>();
         services.AddSingleton<PriceHistoryCache>(_ => new PriceHistoryCache());
 
@@ -24,7 +28,7 @@ public static class DependencyInjection
             var ruleEngineConfig = new RuleEngineConfig(provider);
             return ruleEngineConfig.CreateSession();
         });
-        services.AddSingleton<RuleEngine>();
+        services.AddScoped<RuleEngine>();
         
         services.AddSingleton<INotificationChannel, NoneNotificationChannel>();
         services.AddSingleton<INotificationChannel, TelegramNotificationChannel>();

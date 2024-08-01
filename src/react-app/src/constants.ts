@@ -1,0 +1,1 @@
+export const MAX_SLICE_SIZE = 500;

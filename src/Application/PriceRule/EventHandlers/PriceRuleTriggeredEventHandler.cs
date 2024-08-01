@@ -2,11 +2,12 @@ using Application.Common;
 using Application.Common.Interfaces;
 using Domain.Models.PriceRule;
 using Domain.Models.PriceRule.Events;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Application.PriceRule.EventHandlers;
 
-public class PriceRuleTriggeredEventHandler
+public class PriceRuleTriggeredEventHandler : INotificationHandler<PriceRuleTriggeredEvent>
 {
     private readonly ILogger<PriceRuleTriggeredEventHandler> _logger;
     private readonly IAppDbContext _context;

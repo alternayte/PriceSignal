@@ -2,18 +2,22 @@ using Application.Price;
 using Domain.Models.PriceRule;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Application.Common.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NRules;
 using Skender.Stock.Indicators;
 
 namespace Application.Rules;
 
-public class RuleEngine(RuleCache ruleCache, PriceHistoryCache priceHistoryCache, ILogger<RuleEngine> logger, ISession session)
+public class RuleEngine(RuleCache ruleCache, PriceHistoryCache priceHistoryCache, ILogger<RuleEngine> logger, ISession session, IServiceProvider serviceProvider)
 {
     public void EvaluateRules(IPrice price)
     {
         priceHistoryCache.AddPrice(price.Symbol, price);
+
         session.Insert(price);
+        
         
         var rules = ruleCache.GetAllRules().Where(r => r.Instrument.Symbol == price.Symbol).ToList();
 
@@ -33,65 +37,7 @@ public class RuleEngine(RuleCache ruleCache, PriceHistoryCache priceHistoryCache
         // }
     }
 
-    private bool EvaluateConditions(IPrice price, Domain.Models.PriceRule.PriceRule rule)
-    {
-        var priceHistory = priceHistoryCache.GetPriceHistory(price.Symbol).ToList();
-        if (priceHistory.Count == 0) return false;
-
-        foreach (var condition in rule.Conditions)
-        {
-            switch (condition.ConditionType)
-            {
-                case "PricePercentage":
-                {
-                    var additionalData = JsonSerializer.Deserialize<Dictionary<string, string>?>(condition.AdditionalValues);
-                    var direction = additionalData["Direction"];
-                    var percentage = condition.Value;
-                    var timeWindowHours = Convert.ToInt32(additionalData["TimeWindow"]);
-
-                    var pastPrice = priceHistory
-                        .Where(p => p.Date >= DateTime.Now.AddHours(-timeWindowHours)).MinBy(p => p.Date);
-                    if (pastPrice == null) return false;
-
-                    switch (direction)
-                    {
-                        case "up" when (price.Close / pastPrice.Close - 1) * 100 < percentage:
-                        case "down" when (1 - price.Close / pastPrice.Close) * 100 < percentage:
-                            return false;
-                    }
-
-                    break;
-                }
-                case "TechnicalIndicator":
-                {
-                    var indicatorInputs = JsonSerializer.Deserialize<Dictionary<string, string>?>(condition.AdditionalValues);
-                    var indicatorName = indicatorInputs["Name"];
-                    var threshold = condition.Value;
-
-                    if (indicatorName == "RSI")
-                    {
-                        var period = int.Parse(indicatorInputs["Period"]);
-                        if (priceHistory.Count < period +1 ) return false;
-                        var rsi = priceHistory.GetRsi(period).Last().Rsi;
-                        // var rsi = CalculateRSI(priceHistory, period);
-                        if (rsi <= (double?) threshold)
-                        {
-                            return false;
-                        }
-                        else
-                        {
-                            logger.LogInformation($"RSI for {price.Symbol} is {rsi}");
-                        }
-                    }
-
-                    break;
-                }
-            }
-            // Add additional condition types as needed
-        }
-        //logger.LogInformation($"Rule {rule.Name} triggered for {price.Symbol} at {price.Date} with price {price.Close} and conditions {string.Join(", ", rule.Conditions.Select(c => c.ConditionType))}");
-        return true;
-    }
+    
 
     private decimal CalculateRSI(List<Domain.Models.Instruments.Price> prices, int period)
     {

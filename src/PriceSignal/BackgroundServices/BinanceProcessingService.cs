@@ -17,19 +17,20 @@ public class BinanceProcessingService(
     ILogger<BinanceProcessingService> logger,
     IServiceProvider serviceProvider,
     TimeProvider timeProvider,
-    IWebsocketClientProvider websocketClientProvider,
-    RuleEngine ruleEngine)
+    IWebsocketClientProvider websocketClientProvider)
     : BackgroundService
 {
     private ConcurrentDictionary<string, Price> _currentPriceData = new();
     private long ExchangeId { get; set; }
     private Timer updateTimer;
     private static SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+    private RuleEngine ruleEngine;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        ruleEngine = scope.ServiceProvider.GetRequiredService<RuleEngine>();
         var exchange =
             dbContext.Exchanges.FirstOrDefaultAsync(e => e.Name == "Binance", cancellationToken: stoppingToken);
         ExchangeId = exchange.Id;
@@ -156,6 +157,7 @@ public class BinanceProcessingService(
                                    """;
                 await dbContext.Database.ExecuteSqlRawAsync(insertQuery);
             }
+            _currentPriceData.Clear();
         }
         catch (Exception e)
         {
