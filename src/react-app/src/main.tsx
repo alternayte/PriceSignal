@@ -6,6 +6,7 @@ import { ApolloClient, InMemoryCache, ApolloProvider, HttpLink, split } from '@a
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
+import { AuthProvider } from './features/auth/components/auth-provider.tsx';
 
 const httpLink = new HttpLink({
     uri: '/graphql',
@@ -13,7 +14,6 @@ const httpLink = new HttpLink({
 
 const wsLink = new GraphQLWsLink(
     createClient({
-        //url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/graphql`,
         url: import.meta.env.VITE_WS_URL as string,
     }),
 );
@@ -31,29 +31,31 @@ const splitLink = split(
 );
 
 const client = new ApolloClient({
-  link: splitLink,
-  cache: new InMemoryCache({
-    // typePolicies: {
-    //   Price: {
-    //     keyFields: ['symbol', 'bucket'],
-    //   },
-    // },
-  }),
-    
+    link: splitLink,
+    cache: new InMemoryCache({
+        // typePolicies: {
+        //   Price: {
+        //     keyFields: ['symbol', 'bucket'],
+        //   },
+        // },
+    }),
+
 });
 
 const AppProvider = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <ApolloProvider client={client}>{children}</ApolloProvider>
-    </Suspense>
-  );
+    return (
+        <AuthProvider>
+            <Suspense fallback={<div>Loading...</div>}>
+                <ApolloProvider client={client}>{children}</ApolloProvider>
+            </Suspense>
+        </AuthProvider>
+    );
 };
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <AppProvider>
-      <App />
-    </AppProvider>
-  </React.StrictMode>,
+    <React.StrictMode>
+        <AppProvider>
+            <App />
+        </AppProvider>
+    </React.StrictMode>,
 );

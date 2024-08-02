@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using System.IdentityModel.Tokens.Jwt;
 using Application;
+using Application.Common.Interfaces;
 using Application.Price;
 using Application.Rules;
 using Application.Services.Binance;
@@ -8,8 +10,11 @@ using HotChocolate.Types.Pagination;
 using HotChocolate.Utilities;
 using Infrastructure;
 using Infrastructure.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using PriceSignal.BackgroundServices;
+using PriceSignal.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddConsole();
@@ -50,7 +55,6 @@ builder.Services
 
     })
     .InitializeOnStartup()
-    .AddAuthorization()
     .RegisterDbContext<AppDbContext>(DbContextKind.Synchronized)
     .AddQueryType()
     .AddMutationType()
@@ -63,7 +67,27 @@ builder.Services
     .UseAutomaticPersistedQueryPipeline()
     .AddInMemoryQueryStorage();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUser, UserService>();
 
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.Authority = "https://securetoken.google.com/nxt-spec";
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = "https://securetoken.google.com/nxt-spec",
+        ValidateAudience = true,
+        ValidAudience = "nxt-spec",
+        ValidateLifetime = true
+    };
+});
+builder.Services.AddAuthorization();
 
 if (builder.Configuration.GetSection("Binance:Enabled").Get<bool>())
 {
@@ -159,6 +183,19 @@ g.MapGet("/exchange-info", async (IBinanceApi binanceApi) =>
     })
     .WithName("GetExchangeInfo")
     .WithOpenApi();
+
+g.MapPost("/api/login", async (IUser user, HttpResponse response) =>
+{
+    var token = user.Name;
+    var cookieOptions = new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = true,
+        SameSite = SameSiteMode.Strict
+    };
+    response.Cookies.Append("access_token", token, cookieOptions);
+    return Results.Ok();
+});
 
 app.UseSpa(spa =>
 {
