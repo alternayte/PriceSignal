@@ -77,13 +77,13 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
-    options.Authority = "https://securetoken.google.com/nxt-spec";
+    options.Authority = "https://securetoken.google.com/nxtspec";
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
-        ValidIssuer = "https://securetoken.google.com/nxt-spec",
+        ValidIssuer = "https://securetoken.google.com/nxtspec",
         ValidateAudience = true,
-        ValidAudience = "nxt-spec",
+        ValidAudience = "nxtspec",
         ValidateLifetime = true
     };
 });
@@ -184,9 +184,25 @@ g.MapGet("/exchange-info", async (IBinanceApi binanceApi) =>
     .WithName("GetExchangeInfo")
     .WithOpenApi();
 
-g.MapPost("/api/login", async (IUser user, HttpResponse response) =>
+// app.MapWhen(r=>!r.Request.Path.StartsWithSegments("/api"), appBuilder =>
+// {
+//     appBuilder.UseSpa(spa=>
+//     {
+//         spa.Options.SourcePath = "wwwroot";
+//     });
+// });
+
+app.UseSpa(spa=>
 {
-    var token = user.Name;
+    spa.Options.SourcePath = "wwwroot";
+});
+
+app.UseWebSockets();
+app.MapGraphQL();
+
+g.MapPost("/login", (IUser user, HttpRequest request, HttpResponse response) =>
+{
+    var token = request.Headers["Authorization"].ToString().Replace("Bearer ", "");
     var cookieOptions = new CookieOptions
     {
         HttpOnly = true,
@@ -194,16 +210,15 @@ g.MapPost("/api/login", async (IUser user, HttpResponse response) =>
         SameSite = SameSiteMode.Strict
     };
     response.Cookies.Append("access_token", token, cookieOptions);
+    return Task.FromResult(Results.Ok());
+});
+
+g.MapPost("/logout", async (HttpResponse response) =>
+{
+    response.Cookies.Delete("access_token");
     return Results.Ok();
 });
 
-app.UseSpa(spa =>
-{
-    spa.Options.SourcePath = "wwwroot";
-});
-
-app.UseWebSockets();
-app.MapGraphQL();
 
 app.Run();
 

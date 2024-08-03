@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Application.Common.Interfaces;
 using Application.Rules;
 using Domain.Models.Instruments;
 using Domain.Models.PriceRule;
@@ -13,7 +14,7 @@ namespace PriceSignal.GraphQL.Mutations;
 [MutationType]
 public class PriceRuleMutations
 {
-    public async Task<PriceRule> CreatePriceRule(PriceRuleInput input, AppDbContext dbContext, [Service] IServiceProvider serviceProvider, [Service] RuleCache ruleCache)
+    public async Task<PriceRule> CreatePriceRule(PriceRuleInput input, AppDbContext dbContext, [Service] IServiceProvider serviceProvider, [Service] RuleCache ruleCache, [Service] IUser user)
     {
         var instrument = await dbContext.Instruments.FirstOrDefaultAsync(i => i.EntityId == input.InstrumentId);
         if (instrument == null)
@@ -39,7 +40,8 @@ public class PriceRuleMutations
             Name = input.Name,
             Description = input.Description,
             InstrumentId = instrument.Id,
-            Conditions = conditions
+            Conditions = conditions,
+            UserId = user.UserIdentifier
         };
 
         try

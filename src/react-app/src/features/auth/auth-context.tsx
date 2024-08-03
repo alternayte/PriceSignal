@@ -8,6 +8,7 @@ export type AuthUser = User;
 
 export interface AuthContextType {
     user: AuthUser | null;
+    userLoading: boolean;
     signup: (email: string, password: string) => Promise<User>;
     signin: (email: string, password: string) => Promise<User>;
     signinWithProvider: (name: string) => Promise<User>;

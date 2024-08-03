@@ -1,0 +1,13 @@
+POST localhost:5125/api/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "admin"
+}
+
+###
+
+
+GET localhost:5125/api/exchange-info
+Content-Type: application/json

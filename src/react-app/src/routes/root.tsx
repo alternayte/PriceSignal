@@ -1,9 +1,11 @@
 import { DashboardLayout } from '@/components/layouts/dashboard';
+import { AuthProvider } from '@/features/auth/components/auth-provider';
 import { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 
 export const Root = () => {
   return (
+      <AuthProvider>
     <DashboardLayout>
       <Suspense
         fallback={
@@ -15,5 +17,6 @@ export const Root = () => {
         <Outlet />
       </Suspense>
     </DashboardLayout>
+    </AuthProvider>
   );
 };

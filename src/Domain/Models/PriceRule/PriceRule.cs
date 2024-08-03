@@ -17,6 +17,7 @@ public class PriceRule : BaseAuditableEntity
     public required long InstrumentId { get; set; }
     public ICollection<PriceCondition> Conditions { get; set; } = new List<PriceCondition>();
     public User.User? User { get; set; }
+    public string? UserId { get; init; }
     
     public ICollection<PriceRuleTriggerLog> ActivationLogs { get; set; } = new List<PriceRuleTriggerLog>();
     

@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import {CoinsIcon, HomeIcon, PieChartIcon, PuzzleIcon, ReplaceIcon, SettingsIcon, WalletIcon} from 'lucide-react';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { UserNav } from '@/features/auth/components/user-nav';
 
 const navItems = [
   {
@@ -52,6 +53,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
         <div className="flex items-center gap-4">
           <SymbolsSearch />
         </div>
+        <UserNav/>
       </header>
       <div className="flex flex-1">
         <div className="hidden border-r bg-gray-100/40 lg:block dark:bg-gray-800/40 min-w-[250px]">

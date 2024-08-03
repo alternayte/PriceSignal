@@ -31,6 +31,7 @@ import {format} from "date-fns";
 import {useNavigate} from "react-router-dom";
 import { RuleToggle } from "./rule-toggle"
 import { PriceRule } from "@/gql/graphql"
+import { cn } from "@/lib/utils"
 
 const allRulesQuery = graphql(`
 query GetPriceRules($first: Int) {
@@ -127,7 +128,7 @@ export const RulesList = () => {
                                 </TableCell>
                                 <TableCell className='flex items-center gap-x-2'>
                                     <RuleToggle rule={rule.node as PriceRule}/>
-                                    <Badge variant="outline">Active</Badge>
+                                    <Badge className={cn("h-min",{"bg-green-500":rule.node.isEnabled,"bg-gray-400":!rule.node.isEnabled})}>Active</Badge>
                                 </TableCell>
                                 <TableCell className="hidden md:table-cell">{rule.node.instrument.symbol}</TableCell>
                                 <TableCell className="hidden md:table-cell">

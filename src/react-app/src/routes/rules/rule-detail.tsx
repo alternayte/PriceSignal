@@ -11,6 +11,8 @@ import { RuleActivationChart } from "@/features/rules/components/rule-activation
 import {Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { RuleToggle } from "@/features/rules/components/rule-toggle";
+import { cn } from "@/lib/utils";
 
 export const ActivationLog = graphql(`
   fragment ActivationLog on PriceRuleTriggerLog {
@@ -25,6 +27,7 @@ query GetPriceRule($id: UUID!) {
   priceRule(id: $id) {
     description
     id
+    isEnabled
     name
     instrument {
       id
@@ -81,7 +84,8 @@ export const RuleDetail = () => {
                         <div className='flex w-full justify-between items-center'>
                             <div className='flex align-baseline items-center gap-x-6'>
                                 <CardTitle>Rule Info</CardTitle>
-                                <Badge className="bg-green-500 h-min">Active</Badge>
+                                <RuleToggle rule={data.priceRule}/>
+                                <Badge className={cn("h-min",{"bg-green-500":data.priceRule.isEnabled,"bg-gray-400":!data.priceRule.isEnabled})}>Active</Badge>
                             </div>
                             
                             <EditRule data={data.priceRule as PriceRule}/>                            

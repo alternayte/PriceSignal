@@ -5,6 +5,7 @@ let app;
 
 if (getApps().length === 0) {
     // Initialize Firebase app
+
     app = initializeApp({
         apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string,
         authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string,

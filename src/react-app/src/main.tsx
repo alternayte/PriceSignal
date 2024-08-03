@@ -6,7 +6,6 @@ import { ApolloClient, InMemoryCache, ApolloProvider, HttpLink, split } from '@a
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
-import { AuthProvider } from './features/auth/components/auth-provider.tsx';
 
 const httpLink = new HttpLink({
     uri: '/graphql',
@@ -44,11 +43,9 @@ const client = new ApolloClient({
 
 const AppProvider = ({ children }: { children: React.ReactNode }) => {
     return (
-        <AuthProvider>
             <Suspense fallback={<div>Loading...</div>}>
                 <ApolloProvider client={client}>{children}</ApolloProvider>
             </Suspense>
-        </AuthProvider>
     );
 };
 

@@ -29,7 +29,7 @@ const EMAIL_VERIFICATION = false;
 
 const auth = getAuth(firebaseApp);
 
-setPersistence(auth, inMemoryPersistence);
+// setPersistence(auth, inMemoryPersistence);
 
 // This should wrap the app in `src/pages/_app.js`
 interface AuthContextProps {
@@ -44,6 +44,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
 function useAuthProvider() {
     const navigate = useNavigate();
     const [user, setUser] = useState<User | null>(null);
+    const [userLoading, setUserLoading] = useState<boolean>(true);
     const [token, setToken] = useState<string | null>(null);
 
     // Merge extra user data from the database
@@ -62,13 +63,13 @@ function useAuthProvider() {
 
         const jwt = await user.getIdToken();
 
-        await fetch('/api/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${jwt}`,
-            },
-        });
+        // await fetch('/api/login', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         Authorization: `Bearer ${jwt}`,
+        //     },
+        // });
 
         return handleAuth(response);
     };
@@ -136,19 +137,19 @@ function useAuthProvider() {
         setUser(null);
 
         authSignOut(auth).then(() => {
-            fetch('/api/logout', {
-                cache: 'no-store',
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }).then((res) => {
-                if (res.status === 200) {
-                    navigate(0)
-                    navigate('/')
-                    
-                }
-            });
+            // fetch('/api/logout', {
+            //     cache: 'no-store',
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            // }).then((res) => {
+            //     if (res.status === 200) {
+            //         navigate(0)
+            //         navigate('/')
+            //        
+            //     }
+            // });
         });
         return null;
 
@@ -217,7 +218,7 @@ function useAuthProvider() {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 setUser(user);
-
+                setUserLoading(false);
                 user.getIdToken().then((token) => {
                     // DefaultConfig.config = new Configuration({
                     //     accessToken: token,
@@ -228,6 +229,7 @@ function useAuthProvider() {
              
             } else {
                 setUser(null);
+                setUserLoading(false);
             }
         });
 
@@ -238,16 +240,16 @@ function useAuthProvider() {
                     //     accessToken: token,
                     // });
                     setToken(token);
-                    fetch('/api/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }).then((res) => {
-                        //router.push('/');
-                        navigate(0)
-                    });
+                    // fetch('/api/login', {
+                    //     method: 'POST',
+                    //     headers: {
+                    //         'Content-Type': 'application/json',
+                    //         Authorization: `Bearer ${token}`,
+                    //     },
+                    // }).then((res) => {
+                    //     //router.push('/');
+                    //     navigate(0)
+                    // });
                 });
             }
         });
@@ -261,6 +263,7 @@ function useAuthProvider() {
 
     return {
         user,
+        userLoading,
         signup,
         signin,
         signinWithProvider,
