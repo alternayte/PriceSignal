@@ -1,4 +1,4 @@
-import {ActivationLogsEdge} from '@/gql/graphql'
+import {ActivationLogsEdge, PriceRuleTriggerLog} from '@/gql/graphql'
 import {format} from "date-fns";
 import {
     Table,
@@ -10,10 +10,9 @@ import {
 } from "@/components/ui/table"
 
 type RuleActivityLogProps = {
-    data: ActivationLogsEdge[]
+    data: PriceRuleTriggerLog[]
 }
 export const RuleActivityLog = ({data}:RuleActivityLogProps) => {
-    console.log(data)
     return (
         <Table>
             <TableHeader>
@@ -24,12 +23,12 @@ export const RuleActivityLog = ({data}:RuleActivityLogProps) => {
             </TableHeader>
             <TableBody>
                 {data?.map((log) => (
-                    <TableRow key={log.node.id}>
+                    <TableRow key={log.id}>
                         <TableCell className="font-medium">
-                            {new Intl.NumberFormat().format(log.node.price)}
+                            {new Intl.NumberFormat().format(log.price)}
                         </TableCell>
                         <TableCell className='flex items-center gap-x-2'>
-                            {format(new Date(log.node.triggeredAt), "PPPpp")}
+                            {format(new Date(log.triggeredAt), "PPPpp")}
                         </TableCell>
                     </TableRow>
                 ))}

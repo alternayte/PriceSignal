@@ -35,11 +35,9 @@ query GetPriceRule($id: UUID!) {
     }
     createdAt
     activationLogs (first: 10) {
-      edges {
-        node {
+        nodes {
             ...ActivationLog
         }
-      }
     }
     conditions(first: 10) {
       totalCount
@@ -122,7 +120,7 @@ export const RuleDetail = () => {
                         </div>
                     </CardContent>
                 </Card>
-                <RulePerformanceChart id={id!}/>
+                {/*<RulePerformanceChart id={id!}/>*/}
                 <Card>
                     <CardHeader>
                         <CardTitle>Activity</CardTitle>
@@ -134,16 +132,16 @@ export const RuleDetail = () => {
                     <CardContent>
                         <div className="grid gap-6">
                             <div className="grid gap-3">
-                                <Tabs defaultValue="log" className="w-[400px]">
+                                <Tabs defaultValue="log" className="w-full">
                                     <TabsList>
                                         <TabsTrigger value="log">Activity Log</TabsTrigger>
                                         <TabsTrigger value="chart">Activity Chart</TabsTrigger>
                                     </TabsList>
                                     <TabsContent value="log">
-                                        <RuleActivityLog data={data.priceRule.activationLogs?.edges as ActivationLogsEdge[]}/>
+                                        <RuleActivityLog data={data.priceRule.activationLogs?.nodes as ActivationLogsEdge[]}/>
                                     </TabsContent>
                                     <TabsContent value="chart">
-                                        <RuleActivationChart id={id!}/>
+                                        <RuleActivationChart rule={data.priceRule}/>
                                     </TabsContent>
                                 </Tabs>                            </div>
                         </div>
