@@ -29,5 +29,5 @@ export const PricesChart = ({data}:Props) => {
         chart.current?.updateData(lastData);
     }, [data]);
 
-    return <div id={CHART_ID} style={{ height: '100%' }}/>
+    return <div id={CHART_ID} style={{ height: '90%' }}/>
 }

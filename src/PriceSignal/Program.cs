@@ -6,6 +6,7 @@ using Application.Price;
 using Application.Rules;
 using Application.Services.Binance;
 using Domain.Models.Instruments;
+using Domain.Models.User;
 using HotChocolate.Types.Pagination;
 using HotChocolate.Utilities;
 using Infrastructure;
@@ -200,18 +201,29 @@ app.UseSpa(spa=>
 app.UseWebSockets();
 app.MapGraphQL();
 
-g.MapPost("/login", (IUser user, HttpRequest request, HttpResponse response) =>
+g.MapPost("/login", async (IUser user, HttpRequest request, HttpResponse response, IAppDbContext dbContext) =>
 {
-    var token = request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-    var cookieOptions = new CookieOptions
+    if (user == null) return Task.FromResult(Results.NotFound());
+    // var token = request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+    // var cookieOptions = new CookieOptions
+    // {
+    //     HttpOnly = true,
+    //     Secure = true,
+    //     SameSite = SameSiteMode.Strict
+    // };
+    // response.Cookies.Append("access_token", token, cookieOptions);
+    var existingUser = await dbContext.Users.FindAsync(user.UserIdentifier);
+    if (existingUser != null) return Task.FromResult(Results.Ok());
+    var newUser = new User
     {
-        HttpOnly = true,
-        Secure = true,
-        SameSite = SameSiteMode.Strict
+        Id = user.UserIdentifier,
+        Email = user.Email,
     };
-    response.Cookies.Append("access_token", token, cookieOptions);
+    await dbContext.Users.AddAsync(newUser);
+    await dbContext.SaveChangesAsync();
     return Task.FromResult(Results.Ok());
 });
+
 
 g.MapPost("/logout", async (HttpResponse response) =>
 {

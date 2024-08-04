@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Pulumi;
@@ -17,6 +18,7 @@ return await Deployment.RunAsync(() =>
     var appLabels = new InputMap<string>
     {
         { "app", "price-signal-graph" },
+        {"version", new DateTime().ToString("yyyyMMddHHmmss")}
     };
 
     var webserverNs = new Namespace("webserverNs", new()

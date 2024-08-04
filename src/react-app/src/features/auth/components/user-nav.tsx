@@ -4,15 +4,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/features/auth/auth-context';
 import { Link } from 'react-router-dom';
 
-import { useEffect, useState } from 'react';
-import {Button, buttonVariants } from '@/components/ui/button';
+import { useEffect } from 'react';
+import {Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 type UserNavProps = {
     onClick?: () => void
 }
 export const UserNav = ({ onClick }: UserNavProps) => {
-    const [loading, setLoading] = useState(true);
     const auth = useAuth();
 
     const user = auth?.user;
@@ -26,7 +25,7 @@ export const UserNav = ({ onClick }: UserNavProps) => {
     if (!user?.uid) {
         return (
             <nav>
-                <Button className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'px-4')} onClick={()=> auth?.signinWithProvider('google')}>
+                <Button variant={'outline'} className={cn('px-4')} onClick={()=> auth?.signinWithProvider('google')}>
                     Login
                 </Button>
             </nav>

@@ -63,13 +63,13 @@ function useAuthProvider() {
 
         const jwt = await user.getIdToken();
 
-        // await fetch('/api/login', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         Authorization: `Bearer ${jwt}`,
-        //     },
-        // });
+        await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${jwt}`,
+            },
+        });
 
         return handleAuth(response);
     };
@@ -248,7 +248,7 @@ function useAuthProvider() {
                     //     },
                     // }).then((res) => {
                     //     //router.push('/');
-                    //     navigate(0)
+                    //     // navigate(0)
                     // });
                 });
             }

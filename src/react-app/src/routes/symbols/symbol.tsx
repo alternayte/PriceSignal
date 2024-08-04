@@ -1,3 +1,4 @@
+import { ChartLayout } from '@/components/layouts/chart';
 import { ContentLayout } from '@/components/layouts/content';
 import { MAX_SLICE_SIZE } from '@/constants';
 import { PricesChart } from '@/features/prices/components/prices-chart';
@@ -109,8 +110,8 @@ export const SymbolRoute = () => {
   }
 
   return (
-    <ContentLayout title={`Chart | ${symbol}`}>
+    <ChartLayout title={`Chart | ${symbol}`}>
       <PricesChart key={symbol} data={klines} />
-    </ContentLayout>
+    </ChartLayout>
   );
 };

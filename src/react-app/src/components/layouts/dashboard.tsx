@@ -16,16 +16,16 @@ const navItems = [
     icon: PuzzleIcon,
     to: '/rules',
   },
-  {
-    label: 'Wallet',
-    icon: WalletIcon,
-    to: '/wallet',
-  },
-  {
-    label: 'Exchange',
-    icon: ReplaceIcon,
-    to: '/exchanges',
-  },
+  // {
+  //   label: 'Wallet',
+  //   icon: WalletIcon,
+  //   to: '/wallet',
+  // },
+  // {
+  //   label: 'Exchange',
+  //   icon: ReplaceIcon,
+  //   to: '/exchanges',
+  // },
   {
     label: 'Analytics',
     icon: PieChartIcon,
