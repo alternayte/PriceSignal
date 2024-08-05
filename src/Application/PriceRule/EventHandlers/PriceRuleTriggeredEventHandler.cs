@@ -46,7 +46,7 @@ public class PriceRuleTriggeredEventHandler : INotificationHandler<PriceRuleTrig
     {
         var message = new StringBuilder();
         message.AppendLine($"Rule: {rule.Name}");
-        message.AppendLine($"Price: {rule.LastTriggeredPrice}");
+        message.AppendLine($"Price: {rule.LastTriggeredPrice!.Value.ToString("N")}");
         message.AppendLine($"Instrument: {rule.Instrument.Symbol}");
         message.AppendLine($"Conditions:");
         foreach (var condition in rule.Conditions)
