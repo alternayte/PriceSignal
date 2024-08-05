@@ -6,14 +6,20 @@ using Application.Price;
 using Application.Rules;
 using Application.Services.Binance;
 using Domain.Models.Instruments;
+using Domain.Models.NotificationChannel;
 using Domain.Models.User;
 using HotChocolate.Types.Pagination;
 using HotChocolate.Utilities;
 using Infrastructure;
 using Infrastructure.Data;
+using Infrastructure.PubSub;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using NATS.Client.Core;
+using NATS.Client.JetStream;
+using NATS.Client.JetStream.Models;
 using PriceSignal.BackgroundServices;
 using PriceSignal.Services;
 
@@ -204,14 +210,6 @@ app.MapGraphQL();
 g.MapPost("/login", async (IUser user, HttpRequest request, HttpResponse response, IAppDbContext dbContext) =>
 {
     if (user == null) return Task.FromResult(Results.NotFound());
-    // var token = request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-    // var cookieOptions = new CookieOptions
-    // {
-    //     HttpOnly = true,
-    //     Secure = true,
-    //     SameSite = SameSiteMode.Strict
-    // };
-    // response.Cookies.Append("access_token", token, cookieOptions);
     var existingUser = await dbContext.Users.FindAsync(user.UserIdentifier);
     if (existingUser != null) return Task.FromResult(Results.Ok());
     var newUser = new User
@@ -232,9 +230,43 @@ g.MapPost("/logout", async (HttpResponse response) =>
 });
 
 
+g.MapPost("/message", async (Messageinput message, IPubSub pubsub) =>
+{
+    await pubsub.PublishAsync("notifications.test", message);
+    return Results.Ok();
+});
+
+var natsService = app.Services.GetRequiredService<IPubSub>();
+
+natsService.Subscribe<TelegramInit>("notifications", message =>
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var user = dbContext.Users.FirstOrDefault(u => u.Id == message.User_Id && u.NotificationChannels.FirstOrDefault(nc=>nc.TelegramChatId == message.Chat_Id) == null);
+        if (user != null)
+        {
+            var channel = new UserNotificationChannel
+            {
+                User = user,
+                ChannelType = NotificationChannelType.telegram,
+                TelegramChatId = message.Chat_Id,
+                TelegramUsername = message.Username
+            };
+            dbContext.UserNotificationChannels.Add(channel);
+            dbContext.SaveChanges();
+        }
+    }
+    Console.WriteLine($"Received message: {message}");
+    return Task.CompletedTask;
+}, "notifications.init.telegram");
+
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int) (TemperatureC / 0.5556);
 }
+
+record Messageinput(Int64 Chat_Id, string Message);
+record TelegramInit(Int64 Chat_Id, string Username, string User_Id);

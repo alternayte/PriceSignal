@@ -4,6 +4,7 @@ using Domain.Models.NotificationChannel;
 using Infrastructure.Data;
 using Infrastructure.Data.Interceptors;
 using Infrastructure.Providers;
+using Infrastructure.PubSub;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +21,7 @@ public static class DependencyInjection
         bool isDevelopment)
     {
         services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<IPubSub, NatsService>();
 
         string connectionString;
         if (isDevelopment)
@@ -37,6 +39,7 @@ public static class DependencyInjection
         var dataSource = dataSourceBuilder.Build();
         services.AddDbContext<IAppDbContext,AppDbContext>((sp,options) =>
         {
+            
             options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
             options.UseNpgsql(dataSource).UseSnakeCaseNamingConvention();
         });

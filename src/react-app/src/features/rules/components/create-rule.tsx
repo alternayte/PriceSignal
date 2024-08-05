@@ -127,7 +127,7 @@ export const CreateRule = () => {
                         Create a new rule for your application
                     </DrawerDescription>
                 </DrawerHeader>
-                <RuleForm ref={formRef} className='px-4' changeTracker={setHasUnsavedChanges} indicators={indicators} symbols={instrumentsData?.instruments?.edges || []} submitData={onSubmit}/>
+                <RuleForm ref={formRef} className='px-4' changeTracker={setHasUnsavedChanges} indicators={indicators} symbols={instrumentsData?.instruments?.edges as InstrumentsEdge[] || [] } submitData={onSubmit}/>
                 <DrawerFooter className='pt-2'>
                     <div className="flex items-center space-x-2">
                         <DrawerClose asChild>
@@ -325,7 +325,7 @@ const RuleForm = forwardRef<HTMLFormElement,RuleFormProps>(({className, changeTr
                             {errors.conditions.message}
                         </div>
                     )}
-                    <Button type='button' onClick={() => append({})}>Add condition</Button>
+                    <Button type='button' onClick={() => append({} as any)}>Add condition</Button>
                 </form>
             </Form>
         </div>

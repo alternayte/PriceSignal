@@ -14,6 +14,7 @@ namespace Infrastructure.Data;
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options), IAppDbContext
 {
     public DbSet<User> Users => Set<User>();
+    public DbSet<UserNotificationChannel> UserNotificationChannels => Set<UserNotificationChannel>();
     public DbSet<Exchange> Exchanges => Set<Exchange>();
     public DbSet<Instrument> Instruments => Set<Instrument>();
     public DbSet<PriceRule> PriceRules => Set<PriceRule>();

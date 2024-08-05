@@ -1,5 +1,4 @@
 import { ChartLayout } from '@/components/layouts/chart';
-import { ContentLayout } from '@/components/layouts/content';
 import { MAX_SLICE_SIZE } from '@/constants';
 import { PricesChart } from '@/features/prices/components/prices-chart';
 import { graphql } from '@/gql';

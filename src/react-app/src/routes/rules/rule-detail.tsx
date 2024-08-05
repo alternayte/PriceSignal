@@ -1,11 +1,10 @@
 import { graphql } from "@/gql";
 import {useQuery} from "@apollo/client";
 import {redirect, useParams} from "react-router-dom";
-import {ActivationLogsEdge, ConditionType,PriceRule} from '@/gql/graphql'
+import {ConditionType,PriceRule, PriceRuleTriggerLog} from '@/gql/graphql'
 import { AdditionalMetadata } from "@/features/rules/types";
 import { EditRule } from "@/features/rules/components/edit-rule";
 import { ContentLayout } from "@/components/layouts/content";
-import { RulePerformanceChart } from "@/features/rules/components/rule-performance-chart";
 import { RuleActivityLog } from "@/features/rules/components/rule-activity-log";
 import { RuleActivationChart } from "@/features/rules/components/rule-activation-chart";
 import {Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -82,7 +81,7 @@ export const RuleDetail = () => {
                         <div className='flex w-full justify-between items-center'>
                             <div className='flex align-baseline items-center gap-x-6'>
                                 <CardTitle>Rule Info</CardTitle>
-                                <RuleToggle rule={data.priceRule}/>
+                                <RuleToggle rule={data.priceRule as PriceRule}/>
                                 <Badge className={cn("h-min",{"bg-green-500":data.priceRule.isEnabled,"bg-gray-400":!data.priceRule.isEnabled})}>Active</Badge>
                             </div>
                             
@@ -138,10 +137,10 @@ export const RuleDetail = () => {
                                         <TabsTrigger value="chart">Activity Chart</TabsTrigger>
                                     </TabsList>
                                     <TabsContent value="log">
-                                        <RuleActivityLog data={data.priceRule.activationLogs?.nodes as ActivationLogsEdge[]}/>
+                                        <RuleActivityLog data={data.priceRule.activationLogs?.nodes as PriceRuleTriggerLog[]}/>
                                     </TabsContent>
                                     <TabsContent value="chart">
-                                        <RuleActivationChart rule={data.priceRule}/>
+                                        <RuleActivationChart rule={data.priceRule as PriceRule}/>
                                     </TabsContent>
                                 </Tabs>                            </div>
                         </div>

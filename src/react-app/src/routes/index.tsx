@@ -37,16 +37,17 @@ export const createRouter = () =>
                     return <div>Loading...</div>;
                 }
             },
-                    {
-                        path: '/rules/:id',
-                        lazy: async () => {
-                            const {RuleDetail} = await import('@/routes/rules/rule-detail')
-                            return {Component:RuleDetail}
-                        },
-                        loader: () => {
-                            return <div>Loading Rule...</div>
-                        }
-                    },
+            {
+                path: '/rules/:id',
+                // @ts-ignore
+                lazy: async () => {
+                    const {RuleDetail} = await import('@/routes/rules/rule-detail')
+                    return {Component:RuleDetail}
+                },
+                loader: () => {
+                    return <div>Loading Rule...</div>
+                }
+            },
             {
                 path: '/symbols/:symbol',
                 lazy: async () => {

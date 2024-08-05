@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 type RulePerformanceChartProps = {
     id: string
 }
-export const RulePerformanceChart = ({id}:RulePerformanceChartProps) => {
+export const RulePerformanceChart = ({}:RulePerformanceChartProps) => {
     return (
         <Card>
             <CardHeader>

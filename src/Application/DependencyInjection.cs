@@ -19,7 +19,7 @@ public static class DependencyInjection
         {
             config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
         });
-        // services.AddTransient<INotificationHandler<PriceRuleTriggeredEvent>, PriceRuleTriggeredEventHandler>();
+        //services.AddTransient<INotificationHandler<PriceRuleTriggeredEvent>, PriceRuleTriggeredEventHandler>();
         services.AddSingleton<RuleCache>();
         services.AddSingleton<PriceHistoryCache>(_ => new PriceHistoryCache());
 

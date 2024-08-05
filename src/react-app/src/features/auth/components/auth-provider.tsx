@@ -17,14 +17,11 @@ import {
     TwitterAuthProvider,
     User,
     UserCredential,
-    setPersistence,
-    inMemoryPersistence,
     getRedirectResult,
 } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import { AuthContext } from '../auth-context';
 // import { useToast } from '../ui/use-toast';
-import {useNavigate} from "react-router-dom";
 const EMAIL_VERIFICATION = false;
 
 const auth = getAuth(firebaseApp);
@@ -42,10 +39,9 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
 };
 
 function useAuthProvider() {
-    const navigate = useNavigate();
     const [user, setUser] = useState<User | null>(null);
     const [userLoading, setUserLoading] = useState<boolean>(true);
-    const [token, setToken] = useState<string | null>(null);
+    const [, setToken] = useState<string | null>(null);
 
     // Merge extra user data from the database
     // This means extra user data (such as payment plan) is available as part

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using PriceSignal.IaC;
 using Pulumi;
 using Pulumi.Kubernetes.Core.V1;
 using Pulumi.Kubernetes.Networking.V1;
@@ -20,6 +21,10 @@ return await Deployment.RunAsync(() =>
         { "app", "price-signal-graph" },
         {"version", new DateTime().ToString("yyyyMMddHHmmss")}
     };
+    
+
+    
+    
 
     var webserverNs = new Namespace("webserverNs", new()
     {
@@ -28,6 +33,8 @@ return await Deployment.RunAsync(() =>
             Name = k8sNamespace,
         },
     });
+    
+    var telegramBot = new TelegramBotDeployment(webserverNs);
 
     var webserverconfig = new ConfigMap("appsettings", new()
     {

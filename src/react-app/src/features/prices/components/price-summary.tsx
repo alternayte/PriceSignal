@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChartIcon, DollarSignIcon, LineChart } from 'lucide-react';
+import {DollarSignIcon } from 'lucide-react';
 import { FocusedPricesList } from './focused-prices-list';
-import { PriceChartSimple } from './price-chart-simple';
 import { FocusedPricesCharts } from './focused-prices-charts';
 
 export const PriceSummary = () => {

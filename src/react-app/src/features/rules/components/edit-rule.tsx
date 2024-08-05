@@ -124,7 +124,7 @@ export const EditRule = ({data}:EditRuleProps) => {
                         Edit rule
                     </DrawerDescription>
                 </DrawerHeader>
-                <RuleForm ref={formRef} className='px-4 overflow-auto' changeTracker={setHasUnsavedChanges} indicators={indicators} symbols={instrumentsData?.instruments?.edges || []} submitData={onSubmit} rule={data}/>
+                <RuleForm ref={formRef} className='px-4 overflow-auto' changeTracker={setHasUnsavedChanges} indicators={indicators} symbols={instrumentsData?.instruments?.edges as InstrumentsEdge[] || [] } submitData={onSubmit} rule={data}/>
                 <DrawerFooter className='pt-2'>
                     <div className="flex items-center space-x-2">
                         <DrawerClose asChild>
@@ -339,7 +339,7 @@ const RuleForm = forwardRef<HTMLFormElement,RuleFormProps>(({className, changeTr
                             {errors.conditions.message}
                         </div>
                     )}
-                    <Button type='button' onClick={() => append({})}>Add condition</Button>
+                    <Button type='button' onClick={() => append({} as any)}>Add condition</Button>
                 </form>
             </Form>
         </div>

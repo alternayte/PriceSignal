@@ -1,4 +1,4 @@
-import {ActivationLogsEdge, PriceRuleTriggerLog} from '@/gql/graphql'
+import {PriceRuleTriggerLog} from '@/gql/graphql'
 import {format} from "date-fns";
 import {
     Table,

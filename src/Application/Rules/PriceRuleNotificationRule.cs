@@ -1,4 +1,5 @@
 using Application.Common.Interfaces;
+using Application.Price;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -27,18 +28,19 @@ public class PriceRuleNotificationRule : Rule
 
     public override void Define()
     {
+        IPrice price = null;
         Domain.Models.PriceRule.PriceRule priceRule = null;
-
-
+        
         When()
+            .Match<IPrice>(() => price)
             .Match<Domain.Models.PriceRule.PriceRule>(() => priceRule)
             .Exists<Domain.Models.PriceRule.PriceRule>(r => r.HasAttempted);
 
         Then()
-            .Do(ctx => NotifyRuleTrigger(ctx,priceRule));
+            .Do(ctx => NotifyRuleTrigger(ctx,price,priceRule));
     }
     
-    private void NotifyRuleTrigger(IContext ctx, Domain.Models.PriceRule.PriceRule rule)
+    private void NotifyRuleTrigger(IContext ctx,IPrice price, Domain.Models.PriceRule.PriceRule rule)
     {
         try
         {
@@ -49,10 +51,21 @@ public class PriceRuleNotificationRule : Rule
             // _mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
             _context = scope.ServiceProvider.GetRequiredService<IAppDbContext>();
             rule.HasAttempted = false;
+            
+            var nowTime = DateTime.UtcNow;
+            // do not trigger send if last trigger time has not passed 5 minute cooldown
+            // if (rule.LastTriggeredAt.HasValue && rule.LastTriggeredAt.Value.AddMinutes(5) > nowTime)
+            // {
+            //     // _logger.LogInformation("Price rule domain event: {Event} | {Id} | Skipped", notification.GetType().Name, notification.Rule.EntityId);
+            //     return;
+            // }
+            rule.Trigger(price.Close);
             _context.PriceRules.Update(rule);
-            _context.SaveChanges();
+            _context.SaveChangesAsync().GetAwaiter().GetResult();
         } catch (Exception e)
         {
+            _logger.LogError(e.Message);
+            throw;
             // ignored
         }
 

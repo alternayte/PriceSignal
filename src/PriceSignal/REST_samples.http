@@ -11,3 +11,13 @@ Content-Type: application/json
 
 GET localhost:5125/api/exchange-info
 Content-Type: application/json
+
+###
+
+POST localhost:5125/api/message
+Content-Type: application/json
+
+{
+    "message": "Hello World",
+    "type": "info"
+}

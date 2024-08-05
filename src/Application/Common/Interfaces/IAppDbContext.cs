@@ -14,6 +14,7 @@ public interface IAppDbContext
     public DbSet<PriceRuleTriggerLog> PriceRuleTriggerLogs { get;  }
     public DbSet<Domain.Models.PriceRule.PriceRule> PriceRules { get;  }
     public DbSet<User> Users { get;  }
+    public DbSet<UserNotificationChannel> UserNotificationChannels { get;  }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken));
     int SaveChanges();

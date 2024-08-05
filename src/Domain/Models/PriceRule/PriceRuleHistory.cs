@@ -16,10 +16,18 @@ public class PriceRuleTriggerLog : BaseAuditableEntity
     
     public PriceRuleTriggerLog(PriceRule rule)
     {
-        PriceRule = rule;
+        var opts = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        };
+
+        PriceRule = new PriceRule()
+            {Id = rule.Id, Name = rule.Name, Description = rule.Description, InstrumentId = rule.InstrumentId};
         Price = rule.LastTriggeredPrice;
         TriggeredAt = rule.LastTriggeredAt ?? DateTime.UtcNow;
-        PriceRuleSnapshot = JsonSerializer.Deserialize<JsonDocument>(JsonSerializer.Serialize(rule)) ??
+        var snapshot = new PriceRuleSnapshot(rule.Name, rule.Description, rule.NotificationChannel.ToString(), rule.Instrument.Symbol, rule.Conditions.Select(c => new ConditionSnapshot(c.ConditionType, c.Value, c.AdditionalValues)).ToList());
+        PriceRuleSnapshot = JsonSerializer.Deserialize<JsonDocument>(JsonSerializer.Serialize(snapshot,opts)) ??
                             JsonDocument.Parse("{}");
     }
 }

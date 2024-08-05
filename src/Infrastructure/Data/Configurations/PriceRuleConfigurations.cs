@@ -3,6 +3,7 @@ using Domain.Models.PriceRule;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Infrastructure.Data.Configurations;
 
@@ -31,11 +32,11 @@ public class PriceRuleConfigurations : IEntityTypeConfiguration<PriceRule>
         builder.Property(pr => pr.NotificationChannel)
             .HasDefaultValue(NotificationChannelType.none)
             .HasColumnType("notification_channel_type")
-            
             .IsRequired();
+            // .HasConversion(new EnumToStringConverter<NotificationChannelType>());
             // .HasConversion(v => v.ToString(),
             //     v => (NotificationChannelType) Enum.Parse(typeof(NotificationChannelType), v, true));
-            //
+            
         builder.Property(pr=>pr.CreatedAt)
             .HasDefaultValueSql("now()")
             .ValueGeneratedOnAdd();

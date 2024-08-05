@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/chart"
 import { TrendingUp } from "lucide-react"
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
-import {PriceItemFragment} from "@/gql/graphql"
 import {format} from "date-fns";
 
 

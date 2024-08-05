@@ -28,11 +28,10 @@ public class PriceRule : BaseAuditableEntity
     {
         LastTriggeredPrice = price;
         LastTriggeredAt = DateTime.UtcNow;
-        if (Events.Count == 0)
-        {
-            AddEvent(new PriceRuleTriggeredEvent(this));
-        }
-        
+        if (Events.Count != 0) return;
+        AddEvent(new PriceRuleTriggeredEvent(this));
+        ActivationLogs.Add(new PriceRuleTriggerLog(this));
+
     }
 }
 

@@ -8,20 +8,26 @@ namespace Infrastructure.Data.Interceptors;
 
 public class AuditableEntityInterceptor(TimeProvider dateTime, IMediator mediator) : SaveChangesInterceptor
 {
+    private bool _dispatchedEvents = false;
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
+        if (_dispatchedEvents) return base.SavingChanges(eventData, result);
         UpdateEntities(eventData.Context);
         DispatchEvents(eventData.Context).GetAwaiter().GetResult();
+        _dispatchedEvents = true;
 
         return base.SavingChanges(eventData, result);
     }
 
     public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
     {
+        if (_dispatchedEvents) return await base.SavingChangesAsync(eventData, result, cancellationToken);
         UpdateEntities(eventData.Context);
         await DispatchEvents(eventData.Context);
+        _dispatchedEvents = true;
 
         return await base.SavingChangesAsync(eventData, result, cancellationToken);
+        
     }
 
     public void UpdateEntities(DbContext? context)
@@ -59,6 +65,8 @@ public class AuditableEntityInterceptor(TimeProvider dateTime, IMediator mediato
 
         foreach (var domainEvent in domainEvents)
             await mediator.Publish(domainEvent);
+        
+        _dispatchedEvents = true;
     }
 }
 

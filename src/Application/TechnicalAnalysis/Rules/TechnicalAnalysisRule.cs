@@ -129,15 +129,15 @@ public class TechnicalAnalysisRule : Rule
             }
             if (allConditionsMet)
             {
-                rule.Trigger(price.Close);
+                //rule.Trigger(price.Close);
             }
         }
     }
 
-    private void TriggerAlert(IPrice price, Domain.Models.PriceRule.PriceRule rule, NotificationService notificationService)
-    {
-        rule.Trigger(price.Close);
-        Task.FromResult(notificationService.SendAsync("1234", $"Rule triggered: {rule.Name} for {price.Symbol}.",
-            rule.NotificationChannel));
-    }
+    // private void TriggerAlert(IPrice price, Domain.Models.PriceRule.PriceRule rule, NotificationService notificationService)
+    // {
+    //     rule.Trigger(price.Close);
+    //     Task.FromResult(notificationService.SendAsync("1234", $"Rule triggered: {rule.Name} for {price.Symbol}.",
+    //         rule.NotificationChannel));
+    // }
 }
