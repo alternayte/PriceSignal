@@ -93,6 +93,38 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = "nxtspec",
         ValidateLifetime = true
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+            if (string.IsNullOrEmpty(token))
+            {
+                token = context.Request.Cookies["access_token"];
+            }
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                context.Token = token;
+            }
+
+            return Task.CompletedTask;
+        },
+        // OnTokenValidated = context =>
+        // {
+        //     // Logging to verify if token is validated
+        //     Console.WriteLine("Token validated");
+        //     return Task.CompletedTask;
+        // },
+        // OnAuthenticationFailed = context =>
+        // {
+        //     // Logging if authentication fails
+        //     Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+        //     return Task.CompletedTask;
+        // }
+        
+    };
 });
 builder.Services.AddAuthorization();
 
@@ -209,16 +241,29 @@ app.MapGraphQL();
 
 g.MapPost("/login", async (IUser user, HttpRequest request, HttpResponse response, IAppDbContext dbContext) =>
 {
-    if (user == null) return Task.FromResult(Results.NotFound());
-    var existingUser = await dbContext.Users.FindAsync(user.UserIdentifier);
-    if (existingUser != null) return Task.FromResult(Results.Ok());
-    var newUser = new User
+    if (string.IsNullOrEmpty(user.UserIdentifier))
     {
-        Id = user.UserIdentifier,
-        Email = user.Email,
-    };
-    await dbContext.Users.AddAsync(newUser);
-    await dbContext.SaveChangesAsync();
+        return Task.FromResult(Results.BadRequest());
+    }
+    var existingUser = await dbContext.Users.FindAsync(user.UserIdentifier);
+    if (existingUser == null)
+    {
+        var newUser = new User
+        {
+            Id = user.UserIdentifier,
+            Email = user.Email,
+        };
+        await dbContext.Users.AddAsync(newUser);
+        await dbContext.SaveChangesAsync();
+    }
+    
+    var token = request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+    response.Cookies.Append("access_token",token, new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = true,
+        SameSite = SameSiteMode.Strict
+    });
     return Task.FromResult(Results.Ok());
 });
 

@@ -236,12 +236,13 @@ function useAuthProvider() {
                     //     accessToken: token,
                     // });
                     setToken(token);
-                    // fetch('/api/login', {
-                    //     method: 'POST',
-                    //     headers: {
-                    //         'Content-Type': 'application/json',
-                    //         Authorization: `Bearer ${token}`,
-                    //     },
+                    fetch('/api/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`,
+                        },
+                    });
                     // }).then((res) => {
                     //     //router.push('/');
                     //     // navigate(0)

@@ -16,6 +16,10 @@ public class PriceRuleMutations
 {
     public async Task<PriceRule> CreatePriceRule(PriceRuleInput input, AppDbContext dbContext, [Service] IServiceProvider serviceProvider, [Service] RuleCache ruleCache, [Service] IUser user)
     {
+        if (user.UserIdentifier == null)
+        {
+            throw new InvalidOperationException("User not found");
+        }
         var instrument = await dbContext.Instruments.FirstOrDefaultAsync(i => i.EntityId == input.InstrumentId);
         if (instrument == null)
         {
@@ -59,9 +63,9 @@ public class PriceRuleMutations
         return priceRule;
     }
     
-    public async Task<PriceRule> UpdatePriceRule(PriceRuleInput input, AppDbContext dbContext, [Service] RuleCache ruleCache)
+    public async Task<PriceRule> UpdatePriceRule(PriceRuleInput input, AppDbContext dbContext, [Service] RuleCache ruleCache,[Service] IUser user)
     {
-        var priceRule = await dbContext.PriceRules.Include(pr => pr.Conditions).FirstOrDefaultAsync(pr => pr.EntityId == input.Id);
+        var priceRule = await dbContext.PriceRules.Include(pr => pr.Conditions).FirstOrDefaultAsync(pr => pr.EntityId == input.Id && pr.UserId == user.UserIdentifier);
         if (priceRule == null)
         {
             throw new InvalidOperationException("Price rule not found");
@@ -104,9 +108,9 @@ public class PriceRuleMutations
         return priceRule;
     }
     
-    public async Task<PriceRule> DeletePriceRule(Guid id, AppDbContext dbContext, [Service] RuleCache ruleCache)
+    public async Task<PriceRule> DeletePriceRule(Guid id, AppDbContext dbContext, [Service] RuleCache ruleCache,[Service] IUser user)
     {
-        var priceRule = await dbContext.PriceRules.FirstOrDefaultAsync(pr => pr.EntityId == id);
+        var priceRule = await dbContext.PriceRules.FirstOrDefaultAsync(pr => pr.EntityId == id && pr.UserId == user.UserIdentifier);
         if (priceRule == null)
         {
             throw new InvalidOperationException("Price rule not found");
@@ -125,9 +129,9 @@ public class PriceRuleMutations
         return priceRule;
     }
     
-    public async Task<PriceRule> TogglePriceRule(Guid id, AppDbContext dbContext, [Service] RuleCache ruleCache)
+    public async Task<PriceRule> TogglePriceRule(Guid id, AppDbContext dbContext, [Service] RuleCache ruleCache,[Service] IUser user)
     {
-        var priceRule = await dbContext.PriceRules.FirstOrDefaultAsync(pr => pr.EntityId == id);
+        var priceRule = await dbContext.PriceRules.FirstOrDefaultAsync(pr => pr.EntityId == id && pr.UserId == user.UserIdentifier);
         if (priceRule == null)
         {
             throw new InvalidOperationException("Price rule not found");

@@ -58,9 +58,18 @@ export const createRouter = () =>
                     return <div>Loading...</div>;
                 },
             },
+            {
+                path: 'settings',
+                lazy: async () => {
+                    const { Settings } = await import('@/routes/settings/settings');
+                    return { Component: Settings };
+                },
+                loader: () => {
+                    return <div>Loading...</div>;
+                }
+            }
         ],
     },
-    
     {
       path: '/contact',
       element: <div>Contact</div>,

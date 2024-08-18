@@ -350,6 +350,13 @@ export type ListFilterInputTypeOfSubscriptionFilterInput = {
   some?: InputMaybe<SubscriptionFilterInput>;
 };
 
+export type ListFilterInputTypeOfUserNotificationChannelFilterInput = {
+  all?: InputMaybe<UserNotificationChannelFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']['input']>;
+  none?: InputMaybe<UserNotificationChannelFilterInput>;
+  some?: InputMaybe<UserNotificationChannelFilterInput>;
+};
+
 export type LongOperationFilterInput = {
   eq?: InputMaybe<Scalars['Long']['input']>;
   gt?: InputMaybe<Scalars['Long']['input']>;
@@ -369,6 +376,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   createPriceRule: PriceRule;
   deletePriceRule: PriceRule;
+  deleteTelegramConnection: Scalars['UUID']['output'];
   togglePriceRule: PriceRule;
   updatePriceRule: PriceRule;
 };
@@ -407,6 +415,28 @@ export type NotificationChannelTypeOperationFilterInput = {
   in?: InputMaybe<Array<NotificationChannelType>>;
   neq?: InputMaybe<NotificationChannelType>;
   nin?: InputMaybe<Array<NotificationChannelType>>;
+};
+
+/** A connection to a list of items. */
+export type NotificationChannelsConnection = {
+  __typename?: 'NotificationChannelsConnection';
+  /** A list of edges. */
+  edges?: Maybe<Array<NotificationChannelsEdge>>;
+  /** A flattened list of the nodes. */
+  nodes?: Maybe<Array<UserNotificationChannel>>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
+  totalCount: Scalars['Int']['output'];
+};
+
+/** An edge in a connection. */
+export type NotificationChannelsEdge = {
+  __typename?: 'NotificationChannelsEdge';
+  /** A cursor for use in pagination. */
+  cursor: Scalars['String']['output'];
+  /** The item at the end of the edge. */
+  node: UserNotificationChannel;
 };
 
 /** Information about pagination in a connection. */
@@ -636,6 +666,7 @@ export type Query = {
   priceRule?: Maybe<PriceRule>;
   priceRules?: Maybe<PriceRulesConnection>;
   prices?: Maybe<PricesConnection>;
+  user?: Maybe<User>;
 };
 
 
@@ -740,14 +771,53 @@ export type SubscriptionFilterInput = {
   user?: InputMaybe<UserFilterInput>;
 };
 
+export type User = {
+  __typename?: 'User';
+  email: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  notificationChannels?: Maybe<NotificationChannelsConnection>;
+};
+
+
+export type UserNotificationChannelsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
 export type UserFilterInput = {
   and?: InputMaybe<Array<UserFilterInput>>;
   email?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<StringOperationFilterInput>;
+  notificationChannels?: InputMaybe<ListFilterInputTypeOfUserNotificationChannelFilterInput>;
   or?: InputMaybe<Array<UserFilterInput>>;
   priceRules?: InputMaybe<ListFilterInputTypeOfPriceRuleFilterInput>;
   stripeCustomerId?: InputMaybe<StringOperationFilterInput>;
   subscriptions?: InputMaybe<ListFilterInputTypeOfSubscriptionFilterInput>;
+};
+
+export type UserNotificationChannel = {
+  __typename?: 'UserNotificationChannel';
+  channelType: NotificationChannelType;
+  id: Scalars['ID']['output'];
+  telegramChatId: Scalars['String']['output'];
+  telegramUsername: Scalars['String']['output'];
+};
+
+export type UserNotificationChannelFilterInput = {
+  and?: InputMaybe<Array<UserNotificationChannelFilterInput>>;
+  channelType?: InputMaybe<NotificationChannelTypeOperationFilterInput>;
+  createdAt?: InputMaybe<DateTimeOperationFilterInput>;
+  deletedAt?: InputMaybe<DateTimeOperationFilterInput>;
+  entityId?: InputMaybe<UuidOperationFilterInput>;
+  events?: InputMaybe<ListFilterInputTypeOfBaseEventFilterInput>;
+  id?: InputMaybe<LongOperationFilterInput>;
+  modifiedAt?: InputMaybe<DateTimeOperationFilterInput>;
+  or?: InputMaybe<Array<UserNotificationChannelFilterInput>>;
+  telegramChatId?: InputMaybe<LongOperationFilterInput>;
+  telegramUsername?: InputMaybe<StringOperationFilterInput>;
+  user?: InputMaybe<UserFilterInput>;
 };
 
 export type UuidOperationFilterInput = {
@@ -847,6 +917,16 @@ export type DeletePriceRuleMutationVariables = Exact<{
 
 export type DeletePriceRuleMutation = { __typename?: 'Mutation', deletePriceRule: { __typename?: 'PriceRule', id: string } };
 
+export type UserSettingsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type UserSettingsQuery = { __typename?: 'Query', user?: { __typename?: 'User', email: string, notificationChannels?: { __typename?: 'NotificationChannelsConnection', nodes?: Array<{ __typename?: 'UserNotificationChannel', id: string, channelType: NotificationChannelType, telegramUsername: string }> | null } | null } | null };
+
+export type DisconnectTelegramMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type DisconnectTelegramMutation = { __typename?: 'Mutation', deleteTelegramConnection: any };
+
 export type ActivationLogFragment = { __typename?: 'PriceRuleTriggerLog', id: string, triggeredAt: any, price?: any | null } & { ' $fragmentName'?: 'ActivationLogFragment' };
 
 export type GetPriceRuleQueryVariables = Exact<{
@@ -878,5 +958,7 @@ export const GetPricesForSymbolDocument = {"kind":"Document","definitions":[{"ki
 export const ToggleRuleStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ToggleRuleStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"togglePriceRule"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"isEnabled"}}]}}]}}]} as unknown as DocumentNode<ToggleRuleStatusMutation, ToggleRuleStatusMutationVariables>;
 export const GetPriceRulesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetPriceRules"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"priceRules"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"isEnabled"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"instrument"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"symbol"}}]}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasPreviousPage"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}}]} as unknown as DocumentNode<GetPriceRulesQuery, GetPriceRulesQueryVariables>;
 export const DeletePriceRuleDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeletePriceRule"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deletePriceRule"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<DeletePriceRuleMutation, DeletePriceRuleMutationVariables>;
+export const UserSettingsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"UserSettings"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"notificationChannels"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"10"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"channelType"}},{"kind":"Field","name":{"kind":"Name","value":"telegramUsername"}}]}}]}}]}}]}}]} as unknown as DocumentNode<UserSettingsQuery, UserSettingsQueryVariables>;
+export const DisconnectTelegramDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DisconnectTelegram"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteTelegramConnection"}}]}}]} as unknown as DocumentNode<DisconnectTelegramMutation, DisconnectTelegramMutationVariables>;
 export const GetPriceRuleDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetPriceRule"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"priceRule"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"isEnabled"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"instrument"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}}]}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"activationLogs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"10"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ActivationLog"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"conditions"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"10"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"additionalValues"}},{"kind":"Field","name":{"kind":"Name","value":"conditionType"}}]}}]}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ActivationLog"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PriceRuleTriggerLog"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"triggeredAt"}},{"kind":"Field","name":{"kind":"Name","value":"price"}}]}}]} as unknown as DocumentNode<GetPriceRuleQuery, GetPriceRuleQueryVariables>;
 export const SubscribeToPricesForSymbolDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"SubscribeToPricesForSymbol"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"symbol"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"onPriceUpdated"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"symbol"},"value":{"kind":"Variable","name":{"kind":"Name","value":"symbol"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"timestamp"},"name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"close"}},{"kind":"Field","name":{"kind":"Name","value":"high"}},{"kind":"Field","name":{"kind":"Name","value":"low"}},{"kind":"Field","name":{"kind":"Name","value":"open"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"volume"}}]}}]}}]} as unknown as DocumentNode<SubscribeToPricesForSymbolSubscription, SubscribeToPricesForSymbolSubscriptionVariables>;

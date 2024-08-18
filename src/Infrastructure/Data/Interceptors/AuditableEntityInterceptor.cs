@@ -45,6 +45,11 @@ public class AuditableEntityInterceptor(TimeProvider dateTime, IMediator mediato
             {
                 entry.Entity.ModifiedAt = dateTime.GetUtcNow().UtcDateTime;
             }
+            if (entry.State == EntityState.Deleted)
+            {
+                entry.Entity.DeletedAt = dateTime.GetUtcNow().UtcDateTime;
+                entry.State = EntityState.Modified;
+            }
         }
     }
     

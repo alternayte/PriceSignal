@@ -37,7 +37,7 @@ public class UserConfigurations : IEntityTypeConfiguration<User>
             builder.HasMany(r => r.PriceRules)
                 .WithOne(pr => pr.User);
             // .HasPrincipalKey(u => u.Id);
-            
+
             builder.HasMany(r => r.NotificationChannels)
                 .WithOne(nc => nc.User);
     }

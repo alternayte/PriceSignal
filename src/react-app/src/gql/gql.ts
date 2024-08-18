@@ -24,6 +24,8 @@ const documents = {
     "\n    mutation ToggleRuleStatus($id: UUID!) {\n        togglePriceRule(id:$id) {\n            id\n            isEnabled\n        }\n    }\n": types.ToggleRuleStatusDocument,
     "\nquery GetPriceRules($first: Int) {\n  priceRules(first: $first) {\n    edges {\n      node {\n        description\n        isEnabled\n        id\n        name\n        instrument {\n          symbol\n        }\n        createdAt\n      }\n    }\n    totalCount\n    pageInfo {\n      hasPreviousPage\n      hasNextPage\n    }\n  }\n}\n": types.GetPriceRulesDocument,
     "\nmutation DeletePriceRule($id: UUID!) {\n  deletePriceRule(id: $id) {\n    id\n  }\n}\n": types.DeletePriceRuleDocument,
+    "\nquery UserSettings {\n  user {\n    email\n    notificationChannels(first: 10) {\n      nodes {\n        id\n        channelType\n        telegramUsername\n      }\n    }\n  }\n}\n": types.UserSettingsDocument,
+    "\nmutation DisconnectTelegram {\n  deleteTelegramConnection\n}\n": types.DisconnectTelegramDocument,
     "\n  fragment ActivationLog on PriceRuleTriggerLog {\n    id\n    triggeredAt\n    price\n  }\n": types.ActivationLogFragmentDoc,
     "\nquery GetPriceRule($id: UUID!) {\n  priceRule(id: $id) {\n    description\n    id\n    isEnabled\n    name\n    instrument {\n      id\n      symbol\n    }\n    createdAt\n    activationLogs (first: 10) {\n        nodes {\n            ...ActivationLog\n        }\n    }\n    conditions(first: 10) {\n      totalCount\n      edges {\n        cursor\n        node {\n          value\n          additionalValues\n          conditionType\n        }\n      }\n    }\n  }\n}\n": types.GetPriceRuleDocument,
     "\n  subscription SubscribeToPricesForSymbol($symbol: String!) {\n    onPriceUpdated(symbol: $symbol) {\n      timestamp: bucket\n      close\n      high\n      low\n      open\n      symbol\n      volume\n    }\n  }\n": types.SubscribeToPricesForSymbolDocument,
@@ -87,6 +89,14 @@ export function graphql(source: "\nquery GetPriceRules($first: Int) {\n  priceRu
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\nmutation DeletePriceRule($id: UUID!) {\n  deletePriceRule(id: $id) {\n    id\n  }\n}\n"): (typeof documents)["\nmutation DeletePriceRule($id: UUID!) {\n  deletePriceRule(id: $id) {\n    id\n  }\n}\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\nquery UserSettings {\n  user {\n    email\n    notificationChannels(first: 10) {\n      nodes {\n        id\n        channelType\n        telegramUsername\n      }\n    }\n  }\n}\n"): (typeof documents)["\nquery UserSettings {\n  user {\n    email\n    notificationChannels(first: 10) {\n      nodes {\n        id\n        channelType\n        telegramUsername\n      }\n    }\n  }\n}\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\nmutation DisconnectTelegram {\n  deleteTelegramConnection\n}\n"): (typeof documents)["\nmutation DisconnectTelegram {\n  deleteTelegramConnection\n}\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

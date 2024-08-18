@@ -9,6 +9,7 @@ import { getMainDefinition } from '@apollo/client/utilities';
 
 const httpLink = new HttpLink({
     uri: '/graphql',
+    credentials: 'include',
 });
 
 const wsLink = new GraphQLWsLink(
