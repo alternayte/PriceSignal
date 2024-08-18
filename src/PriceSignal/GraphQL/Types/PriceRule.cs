@@ -21,6 +21,8 @@ public class PriceRuleType : ObjectType<PriceRule>
         descriptor.Field(x => x.Description).Type<StringType>();
         descriptor.Field(x => x.Instrument).Type<NonNullType<InstrumentType>>();
         descriptor.Field(x => x.IsEnabled).Type<NonNullType<BooleanType>>();
+        descriptor.Field(x=>x.LastTriggeredAt).Type<DateTimeType>();
+        descriptor.Field(x=>x.LastTriggeredPrice).Type<DecimalType>();
         descriptor.Field(x => x.NotificationChannel).Type<NonNullType<NotificationChannelTypeType>>();
         descriptor.Field(x => x.Conditions).Type<ListType<NonNullType<PriceConditionType>>>()
             .UsePaging(options: new PagingOptions {IncludeTotalCount = true})

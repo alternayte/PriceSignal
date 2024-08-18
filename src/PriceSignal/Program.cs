@@ -61,8 +61,12 @@ builder.Services
         RequirePagingBoundaries = true
 
     })
+    .ModifyOptions(opts =>
+    {
+        opts.EnableDefer = true;
+    })
     .InitializeOnStartup()
-    .RegisterDbContext<AppDbContext>(DbContextKind.Synchronized)
+    .RegisterDbContext<AppDbContext>(DbContextKind.Pooled)
     .AddQueryType()
     .AddMutationType()
     .AddSubscriptionType()

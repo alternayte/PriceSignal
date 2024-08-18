@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { graphql } from "@/gql";
 import {useMutation, useQuery} from "@apollo/client";
 import {ConditionType, InstrumentsEdge } from "@/gql/graphql";
+import {v4 as uuidv4 } from "uuid";
 
 
 // const CONDITION_TYPES = {
@@ -98,7 +99,7 @@ export const CreateRule = () => {
         createRule({
             variables: {
                 newRule: {
-                    id: '0000-0000-0000-0000',
+                    id: uuidv4(),
                     name:data.name,
                     description:data.description!,
                     instrumentId:data.symbol,
