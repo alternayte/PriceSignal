@@ -4,6 +4,7 @@ using Application;
 using Application.Common.Interfaces;
 using Application.Price;
 using Application.Rules;
+using Application.Rules.Common;
 using Application.Services.Binance;
 using Domain.Models.Instruments;
 using Domain.Models.NotificationChannel;

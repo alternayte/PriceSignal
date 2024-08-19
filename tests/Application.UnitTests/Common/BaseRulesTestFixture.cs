@@ -1,5 +1,4 @@
 using Application.Rules;
-using Application.TechnicalAnalysis.Rules;
 using Microsoft.Extensions.DependencyInjection;
 using NRules;
 using NRules.Fluent;

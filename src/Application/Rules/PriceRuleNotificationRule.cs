@@ -45,10 +45,8 @@ public class PriceRuleNotificationRule : Rule
         try
         {
             _logger = ctx.Resolve<ILogger<PriceRuleNotificationRule>>();
-            //_mediator = ctx.Resolve<IMediator>();
             _serviceProvider = ctx.Resolve<IServiceProvider>();
             using var scope = _serviceProvider.CreateScope();
-            // _mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
             _context = scope.ServiceProvider.GetRequiredService<IAppDbContext>();
             rule.HasAttempted = false;
             
@@ -66,16 +64,8 @@ public class PriceRuleNotificationRule : Rule
         {
             _logger.LogError(e.Message);
             throw;
-            // ignored
         }
-
         
-        // foreach (var @event in rule.Events)
-        // {
-        //     _mediator.Publish(@event);
-        // }
-        // rule.ClearEvents();
-
         _logger.LogInformation("Price rule triggered: {Rule}", rule.Name);
     }
 }

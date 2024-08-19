@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
-using Domain.Models.PriceRule;
 
-namespace Application.Rules;
+namespace Application.Rules.Common;
 
 public class RuleCache
 {

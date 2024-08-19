@@ -1,12 +1,8 @@
-using Application.TechnicalAnalysis.Rules;
-using NRules.Extensibility;
-
-namespace Application.Rules;
-
 using NRules;
+using NRules.Extensibility;
 using NRules.Fluent;
-using NRules.RuleModel;
-using System;
+
+namespace Application.Rules.Common;
 
 public class RuleEngineConfig
 {

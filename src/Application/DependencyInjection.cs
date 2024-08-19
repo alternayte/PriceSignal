@@ -5,6 +5,7 @@ using Application.Notifications;
 using Application.Price;
 using Application.PriceRule.EventHandlers;
 using Application.Rules;
+using Application.Rules.Common;
 using Domain.Models.PriceRule.Events;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;

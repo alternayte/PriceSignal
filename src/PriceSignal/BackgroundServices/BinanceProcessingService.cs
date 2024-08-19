@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using Application.Common.Interfaces;
 using Application.Price;
 using Application.Rules;
+using Application.Rules.Common;
 using Domain.Models.Exchanges;
 using Domain.Models.Instruments;
 using HotChocolate.Subscriptions;

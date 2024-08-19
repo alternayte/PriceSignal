@@ -6,3 +6,4 @@ riderModule.iml
 wwwroot/
 .idea/
 .env
+appsettings.Development.json

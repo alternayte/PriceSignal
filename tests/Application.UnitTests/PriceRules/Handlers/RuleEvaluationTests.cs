@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Application.Price;
 using Application.Rules;
-using Application.TechnicalAnalysis.Rules;
 using Application.UnitTests.Common;
 using Domain.Models.PriceRule;
 using Microsoft.Extensions.Logging;

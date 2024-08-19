@@ -1,14 +1,8 @@
 using Application.Price;
-using Domain.Models.PriceRule;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Application.Common.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NRules;
-using Skender.Stock.Indicators;
 
-namespace Application.Rules;
+namespace Application.Rules.Common;
 
 public class RuleEngine(RuleCache ruleCache, PriceHistoryCache priceHistoryCache, ILogger<RuleEngine> logger, ISession session, IServiceProvider serviceProvider)
 {

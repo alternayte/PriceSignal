@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Application.Common.Interfaces;
 using Application.Rules;
+using Application.Rules.Common;
 using Domain.Models.Instruments;
 using Domain.Models.PriceRule;
 using Infrastructure.Data;

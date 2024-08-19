@@ -1,14 +1,10 @@
-using System.Text.Json;
-using Application.Common;
-using Application.Common.Interfaces;
 using Application.Price;
-using Domain.Models;
+using Application.TechnicalAnalysis;
 using Domain.Models.PriceRule;
-using Domain.Models.PriceRule.Events;
 using NRules.Fluent.Dsl;
 using NRules.RuleModel;
 
-namespace Application.TechnicalAnalysis.Rules;
+namespace Application.Rules;
 
 public class TechnicalAnalysisRule : Rule
 {
@@ -120,24 +116,17 @@ public class TechnicalAnalysisRule : Rule
                     break;
             }
 
-
+            if (conditionMet) continue;
+            allConditionsMet = false;
+            break;
+            // if (allConditionsMet)
+            // {
+            //     //rule.Trigger(price.Close);
+            // }
+        }
+        if (allConditionsMet)
+        {
             rule.HasAttempted = true;
-            if (!conditionMet)
-            {
-                allConditionsMet = false;
-                break;
-            }
-            if (allConditionsMet)
-            {
-                //rule.Trigger(price.Close);
-            }
         }
     }
-
-    // private void TriggerAlert(IPrice price, Domain.Models.PriceRule.PriceRule rule, NotificationService notificationService)
-    // {
-    //     rule.Trigger(price.Close);
-    //     Task.FromResult(notificationService.SendAsync("1234", $"Rule triggered: {rule.Name} for {price.Symbol}.",
-    //         rule.NotificationChannel));
-    // }
 }
