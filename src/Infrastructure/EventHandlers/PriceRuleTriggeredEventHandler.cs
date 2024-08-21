@@ -1,21 +1,21 @@
 using System.Text;
 using Application.Common;
-using Application.Common.Interfaces;
-using Domain.Models.PriceRule;
 using Domain.Models.PriceRule.Events;
+using Infrastructure.Data;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Application.PriceRule.EventHandlers;
+namespace Infrastructure.EventHandlers;
 
 public class PriceRuleTriggeredEventHandler : INotificationHandler<PriceRuleTriggeredEvent>
 {
     private readonly ILogger<PriceRuleTriggeredEventHandler> _logger;
-    private readonly IAppDbContext _context;
+    private readonly AppDbContext _context;
     private readonly NotificationService _notificationService;
     private TimeProvider _timeProvider;
 
-    public PriceRuleTriggeredEventHandler(ILogger<PriceRuleTriggeredEventHandler> logger, IAppDbContext context, NotificationService notificationService,TimeProvider timeProvider)
+    public PriceRuleTriggeredEventHandler(ILogger<PriceRuleTriggeredEventHandler> logger, AppDbContext context, NotificationService notificationService,TimeProvider timeProvider)
     {
         _logger = logger;
         _context = context;

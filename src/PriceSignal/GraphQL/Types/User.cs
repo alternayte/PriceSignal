@@ -19,7 +19,7 @@ public class UserType: ObjectType<User>
             .Resolve(context =>
             {
                 var user = context.Service<IUser>();
-                var dbContext = context.Services.GetRequiredService<AppDbContext>();
+                var dbContext = context.Services.GetRequiredService<IAppDbContext>();
                 return dbContext.UserNotificationChannels.Where(x => x.User.Id == user.UserIdentifier).AsQueryable();
             });
     }

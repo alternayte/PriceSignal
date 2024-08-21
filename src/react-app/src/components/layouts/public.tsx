@@ -3,14 +3,13 @@ import {CoinsIcon, HomeIcon, PieChartIcon, PuzzleIcon, SettingsIcon,LayoutDashbo
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { UserNav } from '@/features/auth/components/user-nav';
-import { MainNav } from '../ui/main-nav';
 import { MobileNav } from '../ui/mobile-nav';
 
 const navItems = [
   {
     label: 'Home',
     icon: HomeIcon,
-    to: '/',
+    to: '/dashboard',
   },
   {
     label: 'Dashboard',
@@ -22,16 +21,6 @@ const navItems = [
     icon: PuzzleIcon,
     to: '/rules',
   },
-  // {
-  //   label: 'Wallet',
-  //   icon: WalletIcon,
-  //   to: '/wallet',
-  // },
-  // {
-  //   label: 'Exchange',
-  //   icon: ReplaceIcon,
-  //   to: '/exchanges',
-  // },
   {
     label: 'Analytics',
     icon: PieChartIcon,
@@ -43,7 +32,7 @@ const navItems = [
     to: '/settings',
   },
 ];
-export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+export const PublicLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -52,7 +41,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
           <MobileNav items={navItems}/>
           <Link className="flex items-center gap-2 text-lg font-semibold" to="/">
             <CoinsIcon className="h-6 w-6" />
-            <span className='hidden md:flex'>Signal Dashboard</span>
+            <span className='hidden md:flex'>Signal</span>
           </Link>
         </div>
         <div className="flex items-center gap-4">
@@ -61,7 +50,6 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
         <UserNav/>
       </header>
       <div className="flex flex-1">
-        <MainNav items={navItems}/>
         <div className="flex flex-1 flex-col">
           <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">{children}</main>
         </div>

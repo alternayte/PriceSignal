@@ -1,14 +1,30 @@
 import { createBrowserRouter } from 'react-router-dom';
-import { Root } from './root';
+import {PublicRoot, Root } from './root';
 
 export const createRouter = () =>
   createBrowserRouter([
+      {
+          path: '/',
+          element: <PublicRoot />,
+          children: [
+              {
+                  path: '/symbols/:symbol',
+                  lazy: async () => {
+                      const { SymbolRoute } = await import('@/routes/symbols/symbol');
+                      return { Component: SymbolRoute };
+                  },
+                  loader: () => {
+                      return <div>Loading...</div>;
+                  },
+              },
+          ]
+      },
     {
-      path: '/',
+      path: '/dashboard',
       element: <Root />,
         children: [
             {
-                path: '/',
+                path: '/dashboard',
                 lazy: async () => {
                     const { PricesRoute } = await import('@/routes/prices/prices');
                     return { Component: PricesRoute };
@@ -18,7 +34,7 @@ export const createRouter = () =>
                 },
             },
             {
-                path: '/exchanges',
+                path: '/dashboard/exchanges',
                 lazy: async () => {
                     const { ExchangesRoute } = await import('@/routes/exchanges/exchanges');
                     return { Component: ExchangesRoute };
@@ -28,7 +44,7 @@ export const createRouter = () =>
                 },
             },
             {
-                path: '/rules',
+                path: '/dashboard/rules',
                 lazy: async () => {
                     const {RulesRoute} = await import('@/routes/rules/rules');
                     return {Component: RulesRoute};
@@ -38,7 +54,7 @@ export const createRouter = () =>
                 }
             },
             {
-                path: '/rules/:id',
+                path: '/dashboard/rules/:id',
                 // @ts-ignore
                 lazy: async () => {
                     const {RuleDetail} = await import('@/routes/rules/rule-detail')
@@ -49,7 +65,7 @@ export const createRouter = () =>
                 }
             },
             {
-                path: '/symbols/:symbol',
+                path: '/dashboard/symbols/:symbol',
                 lazy: async () => {
                     const { SymbolRoute } = await import('@/routes/symbols/symbol');
                     return { Component: SymbolRoute };
@@ -59,7 +75,7 @@ export const createRouter = () =>
                 },
             },
             {
-                path: 'settings',
+                path: 'dashboard/settings',
                 lazy: async () => {
                     const { Settings } = await import('@/routes/settings/settings');
                     return { Component: Settings };
@@ -74,10 +90,7 @@ export const createRouter = () =>
       path: '/contact',
       element: <div>Contact</div>,
     },
-    {
-      path: '/dashboard',
-      element: <div>Dashboard</div>,
-    },
+
     {
       path: '/login',
       element: <div>Login</div>,

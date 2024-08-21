@@ -23,19 +23,19 @@ public class TechnicalAnalysisRule : Rule
     public override void Define()
     {
         IPrice price = null;
-        Domain.Models.PriceRule.PriceRule priceRule = null;
+        PriceRule priceRule = null;
 
         When()
             .Match<IPrice>(() => price)
-            .Exists<Domain.Models.PriceRule.PriceRule>(pr => !pr.HasAttempted)
-            .Match<Domain.Models.PriceRule.PriceRule>(() => priceRule, r => r.Instrument.Symbol == price.Symbol && r.IsEnabled && r.DeletedAt == null && !r.HasAttempted);
+            .Exists<PriceRule>(pr => !pr.HasAttempted)
+            .Match<PriceRule>(() => priceRule, r => r.Instrument.Symbol == price.Symbol && r.IsEnabled && r.DeletedAt == null && !r.HasAttempted);
 
         Then()
             .Do(ctx => EvaluateConditions(ctx, price, priceRule))
             .Do(ctx => ctx.Update(priceRule));
     }
     
-    private void EvaluateConditions(IContext ctx, IPrice price, Domain.Models.PriceRule.PriceRule rule)
+    private void EvaluateConditions(IContext ctx, IPrice price, PriceRule rule)
     {
         try
         {
@@ -119,10 +119,6 @@ public class TechnicalAnalysisRule : Rule
             if (conditionMet) continue;
             allConditionsMet = false;
             break;
-            // if (allConditionsMet)
-            // {
-            //     //rule.Trigger(price.Close);
-            // }
         }
         if (allConditionsMet)
         {

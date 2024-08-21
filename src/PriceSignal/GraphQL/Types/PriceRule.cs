@@ -46,7 +46,7 @@ public class PriceRuleType : ObjectType<PriceRule>
     
     [DataLoader]
     internal static async Task<ILookup<Guid,PriceCondition>> GetPriceConditionsOnPriceRuleAsync(IReadOnlyList<Guid> priceRuleIds, 
-        AppDbContext dbContext, CancellationToken cancellationToken)
+        IAppDbContext dbContext, CancellationToken cancellationToken)
     {
         var rules = dbContext.PriceRules.Include(x => x.Conditions).AsQueryable()
             .Where(x => priceRuleIds.Contains(x.EntityId));
@@ -62,7 +62,7 @@ public class PriceRuleType : ObjectType<PriceRule>
     
     [DataLoader]
     internal static async Task<ILookup<Guid,PriceRuleTriggerLog>> GetPriceRuleTriggerLogsAsync(IReadOnlyList<Guid> priceRuleIds, 
-        AppDbContext dbContext, CancellationToken cancellationToken)
+        IAppDbContext dbContext, CancellationToken cancellationToken)
     {
         var logs = dbContext.PriceRules.Include(x=>x.ActivationLogs).AsQueryable()
             .Where(x => priceRuleIds.Contains(x.EntityId));

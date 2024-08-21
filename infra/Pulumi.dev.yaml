@@ -1,4 +1,8 @@
 config:
+  PriceSignal.IaC:alpacaApiKey:
+    secure: AAABAL1UuhMuiCRj5FsZF6i3bECP4RB+kYuI6x8kyBlREdWmx9WTXAqVE7MXpci6THOeVw==
+  PriceSignal.IaC:alpacaApiSecret:
+    secure: AAABAGwUu6rmkzuvAnRY4/xqTkJ6TuAsJcgU2M8reHdff17oO/zRc8HG/pyGNgnTOMEYwVlNwiMfmCz+IvAdLX1IcB2KTJqv
   PriceSignal.IaC:namespace: default
   PriceSignal.IaC:natsUrl: nats://nats:4222
   PriceSignal.IaC:replicas: "1"

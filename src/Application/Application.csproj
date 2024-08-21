@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Services\Alpaca\Models\" />
+      <Folder Include="PriceRule\EventHandlers\" />
       <Folder Include="TechnicalAnalysis\Rules\" />
     </ItemGroup>
 

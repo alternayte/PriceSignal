@@ -1,6 +1,8 @@
 using System.Text.Json;
+using Application.Common;
 using Application.Common.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NATS.Client.Core;
 using NATS.Client.JetStream;
 using NATS.Client.JetStream.Models;
@@ -13,9 +15,10 @@ public class NatsService : IPubSub, IAsyncDisposable
     private readonly INatsJSContext _jetStream;
     private readonly ILogger<NatsService> _logger;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
+    private readonly NatsSettings _natsSettings;
 
 
-    public NatsService(ILogger<NatsService> logger)
+    public NatsService(ILogger<NatsService> logger, IOptions<NatsSettings> natsSettings)
     {
         _jsonSerializerOptions = new JsonSerializerOptions()
         {
@@ -24,7 +27,8 @@ public class NatsService : IPubSub, IAsyncDisposable
         };
         
         _logger = logger;
-        _connection = new NatsConnection(new NatsOpts(){Url = "nats://localhost:4222"});
+        _natsSettings = natsSettings.Value;
+        _connection = new NatsConnection(new NatsOpts(){Url = _natsSettings.Url});
         _jetStream = new NatsJSContext(_connection);
         _jetStream.CreateStreamAsync(new StreamConfig(name: "notifications",
                 subjects: new[]

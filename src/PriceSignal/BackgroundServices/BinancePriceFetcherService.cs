@@ -1,5 +1,6 @@
 
 using System.Collections.Concurrent;
+using System.Text;
 using Application.Common.Interfaces;
 using Application.Price;
 using Application.Services.Binance;
@@ -20,10 +21,17 @@ public class BinancePriceFetcherService(IWebsocketClientProvider websocketClient
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        //await BackfillData();
+        var webSocketUrl = websocketClientProvider.GetUri();
+       
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var dBsymbols = dbContext.PriceRules.Select(r => r.Instrument.Symbol).Distinct().ToList();
+        var dBsymbols = await dbContext.PriceRules.Where(x=>x.IsEnabled).Select(r => r.Instrument.Symbol).Distinct().ToListAsync(cancellationToken: stoppingToken);
+        var symbolStreams = dBsymbols.Select(s => $"{s.ToLower()}@aggTrade").Aggregate((s1, s2) => $"{s1}/{s2}");
+        var currentStreams = webSocketUrl.Split("streams=").Last().Split("/").Select(s => s).ToList();
+        var appendedStreams = symbolStreams.Split("/").Where(s => !currentStreams.Contains(s)).Aggregate((s1, s2) => $"{s1}/{s2}");
+        
+        string newUrl = new StringBuilder(webSocketUrl).Append('/').Append(appendedStreams).ToString();
+        websocketClientProvider.SetUri(newUrl);
         
         foreach (var symbol in dBsymbols)
         {
@@ -48,9 +56,17 @@ public class BinancePriceFetcherService(IWebsocketClientProvider websocketClient
         
         websocketClientProvider.Start(async message =>
         {
-            await WebsocketChannel.SocketChannel.Writer.WriteAsync(message, stoppingToken);
+            try
+            {
+                await WebsocketChannel.SocketChannel.Writer.WriteAsync(message, stoppingToken);    
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            
         });
-        
     }
     
     public void UpdateSubscriptionsAsync()
@@ -117,24 +133,4 @@ public class BinancePriceFetcherService(IWebsocketClientProvider websocketClient
         websocketClientProvider.Stop();
         return base.StopAsync(stoppingToken);
     }
-
-    private async Task BackfillData()
-    {
-
-        
-        using var scope = serviceProvider.CreateScope();
-        var binanceApi = scope.ServiceProvider.GetRequiredService<IBinanceApi>();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        var historicalData = await binanceApi.GetHistoricalCandlesAsync(new KlineParams
-        {
-            Symbol = "BTCUSDT",
-            Interval = KlineInterval.OneMinute,
-            StartTime = DateTimeOffset.UtcNow.AddDays(-1).ToUnixTimeMilliseconds(),
-            // EndTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-        });
-        //dbContext.InstrumentPrices.AddRange(historicalData);
-        //await dbContext.SaveChangesAsync();
-    }
-    
 }

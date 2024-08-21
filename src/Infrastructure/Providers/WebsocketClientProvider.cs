@@ -1,4 +1,5 @@
 using System.Net.WebSockets;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text;
 using Application.Common.Interfaces;
@@ -11,9 +12,17 @@ namespace Infrastructure.Providers;
 
 public class WebsocketClientProvider(string url, ILogger<WebsocketClientProvider> logger) : IWebsocketClientProvider
 {
-    private readonly Uri _uri = new(url);
+    private Uri _uri = new(url);
     private WebsocketClient _client = null!;
 
+    public string GetUri()
+    {
+        return _uri.ToString();
+    }
+    public void SetUri(string url)
+    {
+        _uri = new Uri(url);
+    }
     public void Start(Func<string, Task> onMessageReceived)
     {
         _client = new WebsocketClient(_uri)
@@ -26,6 +35,8 @@ public class WebsocketClientProvider(string url, ILogger<WebsocketClientProvider
             .Where(msg => msg.MessageType == WebSocketMessageType.Text)
             .Select(msg => msg.Text ?? string.Empty)
             .Where(msg => !string.IsNullOrWhiteSpace(msg))
+            .Throttle(TimeSpan.FromMilliseconds(200))  // Throttle to one message every 200ms (5 per second)
+            .ObserveOn(TaskPoolScheduler.Default)
             .Subscribe(OnNext);
 
         _client.DisconnectionHappened.Subscribe(info =>

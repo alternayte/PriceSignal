@@ -42,6 +42,7 @@ function useAuthProvider() {
     const [user, setUser] = useState<User | null>(null);
     const [userLoading, setUserLoading] = useState<boolean>(true);
     const [, setToken] = useState<string | null>(null);
+    const [isLoggedIn,setIsLoggedIn] = useState<boolean>(false)
 
     // Merge extra user data from the database
     // This means extra user data (such as payment plan) is available as part
@@ -59,13 +60,16 @@ function useAuthProvider() {
 
         const jwt = await user.getIdToken();
 
-        await fetch('/api/login', {
+        const resp = await fetch('/api/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${jwt}`,
             },
         });
+        if (resp.status === 200) {
+            setIsLoggedIn(true)
+        }
 
         return handleAuth(response);
     };
@@ -133,19 +137,19 @@ function useAuthProvider() {
         setUser(null);
 
         authSignOut(auth).then(() => {
-            // fetch('/api/logout', {
-            //     cache: 'no-store',
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            // }).then((res) => {
-            //     if (res.status === 200) {
-            //         navigate(0)
-            //         navigate('/')
-            //        
-            //     }
-            // });
+            fetch('/api/logout', {
+                cache: 'no-store',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }).then((res) => {
+                if (res.status === 200) {
+                    setIsLoggedIn(false)
+                    // navigate(0)
+                    // navigate('/')
+                }
+            });
         });
         return null;
 
@@ -242,6 +246,10 @@ function useAuthProvider() {
                             'Content-Type': 'application/json',
                             Authorization: `Bearer ${token}`,
                         },
+                    }).then((res) => {
+                        if (res.status === 200) {
+                            setIsLoggedIn(true)
+                        }
                     });
                     // }).then((res) => {
                     //     //router.push('/');
@@ -267,6 +275,7 @@ function useAuthProvider() {
         signout,
         signinWithRedirect,
         redirectResult,
+        isLoggedIn,
         // sendPasswordResetEmail,
         // confirmPasswordReset,
         // updatePassword,

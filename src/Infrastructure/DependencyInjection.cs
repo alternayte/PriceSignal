@@ -1,10 +1,12 @@
 ﻿using Application.Common.Interfaces;
+using Application.Services.Alpaca;
 using Application.Services.Binance;
 using Domain.Models.NotificationChannel;
 using Infrastructure.Data;
 using Infrastructure.Data.Interceptors;
 using Infrastructure.Providers;
 using Infrastructure.PubSub;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -43,10 +45,24 @@ public static class DependencyInjection
             options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
             options.UseNpgsql(dataSource).UseSnakeCaseNamingConvention();
         });
+        // services.AddPooledDbContextFactory<AppDbContext>((sp,options) =>
+        // {
+        //     var mediator = sp.GetRequiredService<IMediator>();
+        //
+        //     //options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
+        //     options.AddInterceptors(new AuditableEntityInterceptor(TimeProvider.System, mediator));
+        //     options.UseNpgsql(dataSource).UseSnakeCaseNamingConvention();
+        // });
+        // services.AddScoped<IAppDbContext>(provider =>
+        // {
+        //     var factory = provider.GetRequiredService<IDbContextFactory<AppDbContext>>();
+        //     return factory.CreateDbContext();
+        // });
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
 
-        
-        var binanceWebsocketUrl = configuration.GetSection("Binance:WebsocketUrl").Value ?? throw new InvalidOperationException();
+        var binanceSettings = new BinanceSettings();
+        configuration.GetSection(BinanceSettings.Binance).Bind(binanceSettings);
+        var binanceWebsocketUrl = binanceSettings.WebsocketUrl ?? throw new InvalidOperationException();
         services.AddSingleton<IWebsocketClientProvider>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<WebsocketClientProvider>>();
@@ -55,15 +71,29 @@ public static class DependencyInjection
         
         services.AddRefitClient<IBinanceApi>()
             .ConfigureHttpClient(c =>
-                c.BaseAddress = new Uri(configuration.GetSection("Binance:ApiUrl").Value ??
+                c.BaseAddress = new Uri(binanceSettings.ApiUrl ??
                                         throw new InvalidOperationException()))
             .AddPolicyHandler(HttpPolicyExtensions.GetRateLimitPolicy());
+
+        var alpacaSettings = new AlpacaSettings();
+        configuration.GetSection(AlpacaSettings.Alpaca).Bind(alpacaSettings);
+        services.AddRefitClient<IAlpacaApi>()
+            .ConfigureHttpClient(c =>
+            {
+                c.BaseAddress = new Uri(alpacaSettings.ApiUrl ??
+                                        throw new InvalidOperationException());
+                c.DefaultRequestHeaders.Add("APCA-API-KEY-ID", alpacaSettings.ApiKey ??
+                                                             throw new InvalidOperationException());
+                c.DefaultRequestHeaders.Add("APCA-API-SECRET-KEY", alpacaSettings.ApiSecret ??
+                                                                 throw new InvalidOperationException());
+            });
+            
 
 
         return services;
     }
-    
-    public static string ConvertToNpgsqlConnectionString(string postgresUri)
+
+    private static string ConvertToNpgsqlConnectionString(string postgresUri)
     {
         var uri = new Uri(postgresUri);
 

@@ -36,10 +36,25 @@ public class BinanceProcessingService(
             dbContext.Exchanges.FirstOrDefaultAsync(e => e.Name == "Binance", cancellationToken: stoppingToken);
         ExchangeId = exchange.Id;
         var channel = WebsocketChannel.SocketChannel;
-        await foreach (var message in channel.Reader.ReadAllAsync(stoppingToken))
+        try
         {
-            await ProcessMessageAsync(message);
+            await foreach (var message in channel.Reader.ReadAllAsync(stoppingToken))
+            {
+                try
+                {
+                    await ProcessMessageAsync(message);    
+                } catch (Exception e)
+                {
+                    logger.LogError(e, "Failed to process message");
+                }
+            
+            }
+            logger.LogInformation("Stopped processing messages");
+        } catch(Exception e)
+        {
+            logger.LogError(e, "Failed to read message from channel");
         }
+        
     }
 
     public override Task StartAsync(CancellationToken cancellationToken)
@@ -57,6 +72,7 @@ public class BinanceProcessingService(
 
     private async Task ProcessMessageAsync(string message)
     {
+        logger.LogTrace("Processing message: {message}", message);
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var topicEventSender = scope.ServiceProvider.GetRequiredService<ITopicEventSender>();
@@ -146,15 +162,24 @@ public class BinanceProcessingService(
         {
             using var scope = serviceProvider.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
+            var valuesList = new List<string>();
+            var timestamp = timeProvider.GetUtcNow();
             foreach (var (symbol, ohlcData) in _currentPriceData)
             {
-                var timestamp = timeProvider.GetUtcNow();
                 var values =
                     $"('{symbol}', {ohlcData.Close}, {ohlcData.Volume}, {ohlcData.Volume}, '{timestamp:s}', {ExchangeId})";
+                valuesList.Add(values);
+//                 var insertQuery = $"""
+//                                    INSERT INTO instrument_prices (symbol, price, volume, quantity, timestamp, exchange_id)
+//                                    VALUES {values}
+//                                    """;
+//                 await dbContext.Database.ExecuteSqlRawAsync(insertQuery);
+            }
+            if (valuesList.Count > 0)
+            {
                 var insertQuery = $"""
                                    INSERT INTO instrument_prices (symbol, price, volume, quantity, timestamp, exchange_id)
-                                   VALUES {values}
+                                   VALUES {string.Join(",", valuesList)}
                                    """;
                 await dbContext.Database.ExecuteSqlRawAsync(insertQuery);
             }

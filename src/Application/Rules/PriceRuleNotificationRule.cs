@@ -66,6 +66,6 @@ public class PriceRuleNotificationRule : Rule
             throw;
         }
         
-        _logger.LogInformation("Price rule triggered: {Rule}", rule.Name);
+        //_logger.LogInformation("Price rule triggered: {Rule}", rule.Name);
     }
 }

@@ -14,10 +14,11 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  */
 const documents = {
     "\nquery GetExchanges($take: Int!) {\n      exchanges(take: $take) {\n        totalCount\n        items {\n          name\n          description\n        }\n      }\n    }\n": types.GetExchangesDocument,
+    "\n  query MarketNews {\n    news {\n      id\n      headline\n      summary\n      url\n    }\n  }\n": types.MarketNewsDocument,
     "\n  fragment PriceItem on Price {\n    bucket\n    close\n    symbol\n    volume\n  }\n": types.PriceItemFragmentDoc,
     "\nquery GetFocusedPriceLine {\n  ETH:prices(last: 500,interval: ONE_HOUR,where: {symbol:{eq:\"ETHUSDT\"}}) {\n    edges {\n      node {\n        ...PriceItem\n      }\n    }\n  }\n  BTC:prices(last: 500,interval: ONE_HOUR,where: {symbol:{eq:\"BTCUSDT\"}}) {\n    edges {\n      node {\n        ...PriceItem\n      }\n    }\n  }\n}\n": types.GetFocusedPriceLineDocument,
-    "\nquery GetFocusedPrices {\n  ETH:prices(last: 1,interval: ONE_MIN,where: {symbol:{eq:\"ETHUSDT\"}}) {\n    edges {\n      node {\n        ...PriceItem\n      }\n    }\n  }\n  BTC:prices(last: 1,interval: ONE_MIN,where: {symbol:{eq:\"BTCUSDT\"}}) {\n    edges {\n      node {\n        ...PriceItem\n      }\n    }\n  }\n}\n": types.GetFocusedPricesDocument,
-    "\nquery ActiveRules($first: Int) {\n  priceRules(first: $first, where: {isEnabled:{eq:true}}) {\n    nodes {\n      id\n      name\n      description\n      lastTriggeredAt\n      lastTriggeredPrice\n      instrument {\n        id\n        baseAsset\n        quoteAsset\n        symbol\n      }\n    }\n  }\n}": types.ActiveRulesDocument,
+    "\n  query GetFocusedPrices {\n    ETH: prices(last: 1, interval: ONE_MIN, where: { symbol: { eq: \"ETHUSDT\" } }) {\n      edges {\n        node {\n          ...PriceItem\n        }\n      }\n    }\n    BTC: prices(last: 1, interval: ONE_MIN, where: { symbol: { eq: \"BTCUSDT\" } }) {\n      edges {\n        node {\n          ...PriceItem\n        }\n      }\n    }\n  }\n": types.GetFocusedPricesDocument,
+    "\n  query ActiveRules($first: Int) {\n    priceRules(first: $first, where: { isEnabled: { eq: true } }) {\n      nodes {\n        id\n        name\n        description\n        lastTriggeredAt\n        lastTriggeredPrice\n        instrument {\n          id\n          baseAsset\n          quoteAsset\n          symbol\n        }\n      }\n    }\n  }\n": types.ActiveRulesDocument,
     "\n    mutation CreatePriceRule($newRule: PriceRuleInput!) {\n        createPriceRule(input:$newRule) {\n            id\n            name\n            description\n        }\n    }\n": types.CreatePriceRuleDocument,
     "\n    query GetInstruments($first: Int!) {\n        instruments(first:$first) {\n            totalCount\n            edges {\n                node {\n                symbol\n                id\n                }\n            }\n        }\n    }\n": types.GetInstrumentsDocument,
     "\n    mutation editPriceRule($existingRule: PriceRuleInput!) {\n        updatePriceRule(input:$existingRule) {\n            id\n            name\n            description\n        }\n    }\n": types.EditPriceRuleDocument,
@@ -53,6 +54,10 @@ export function graphql(source: "\nquery GetExchanges($take: Int!) {\n      exch
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  query MarketNews {\n    news {\n      id\n      headline\n      summary\n      url\n    }\n  }\n"): (typeof documents)["\n  query MarketNews {\n    news {\n      id\n      headline\n      summary\n      url\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  fragment PriceItem on Price {\n    bucket\n    close\n    symbol\n    volume\n  }\n"): (typeof documents)["\n  fragment PriceItem on Price {\n    bucket\n    close\n    symbol\n    volume\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -61,11 +66,11 @@ export function graphql(source: "\nquery GetFocusedPriceLine {\n  ETH:prices(las
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\nquery GetFocusedPrices {\n  ETH:prices(last: 1,interval: ONE_MIN,where: {symbol:{eq:\"ETHUSDT\"}}) {\n    edges {\n      node {\n        ...PriceItem\n      }\n    }\n  }\n  BTC:prices(last: 1,interval: ONE_MIN,where: {symbol:{eq:\"BTCUSDT\"}}) {\n    edges {\n      node {\n        ...PriceItem\n      }\n    }\n  }\n}\n"): (typeof documents)["\nquery GetFocusedPrices {\n  ETH:prices(last: 1,interval: ONE_MIN,where: {symbol:{eq:\"ETHUSDT\"}}) {\n    edges {\n      node {\n        ...PriceItem\n      }\n    }\n  }\n  BTC:prices(last: 1,interval: ONE_MIN,where: {symbol:{eq:\"BTCUSDT\"}}) {\n    edges {\n      node {\n        ...PriceItem\n      }\n    }\n  }\n}\n"];
+export function graphql(source: "\n  query GetFocusedPrices {\n    ETH: prices(last: 1, interval: ONE_MIN, where: { symbol: { eq: \"ETHUSDT\" } }) {\n      edges {\n        node {\n          ...PriceItem\n        }\n      }\n    }\n    BTC: prices(last: 1, interval: ONE_MIN, where: { symbol: { eq: \"BTCUSDT\" } }) {\n      edges {\n        node {\n          ...PriceItem\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetFocusedPrices {\n    ETH: prices(last: 1, interval: ONE_MIN, where: { symbol: { eq: \"ETHUSDT\" } }) {\n      edges {\n        node {\n          ...PriceItem\n        }\n      }\n    }\n    BTC: prices(last: 1, interval: ONE_MIN, where: { symbol: { eq: \"BTCUSDT\" } }) {\n      edges {\n        node {\n          ...PriceItem\n        }\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\nquery ActiveRules($first: Int) {\n  priceRules(first: $first, where: {isEnabled:{eq:true}}) {\n    nodes {\n      id\n      name\n      description\n      lastTriggeredAt\n      lastTriggeredPrice\n      instrument {\n        id\n        baseAsset\n        quoteAsset\n        symbol\n      }\n    }\n  }\n}"): (typeof documents)["\nquery ActiveRules($first: Int) {\n  priceRules(first: $first, where: {isEnabled:{eq:true}}) {\n    nodes {\n      id\n      name\n      description\n      lastTriggeredAt\n      lastTriggeredPrice\n      instrument {\n        id\n        baseAsset\n        quoteAsset\n        symbol\n      }\n    }\n  }\n}"];
+export function graphql(source: "\n  query ActiveRules($first: Int) {\n    priceRules(first: $first, where: { isEnabled: { eq: true } }) {\n      nodes {\n        id\n        name\n        description\n        lastTriggeredAt\n        lastTriggeredPrice\n        instrument {\n          id\n          baseAsset\n          quoteAsset\n          symbol\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query ActiveRules($first: Int) {\n    priceRules(first: $first, where: { isEnabled: { eq: true } }) {\n      nodes {\n        id\n        name\n        description\n        lastTriggeredAt\n        lastTriggeredPrice\n        instrument {\n          id\n          baseAsset\n          quoteAsset\n          symbol\n        }\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

@@ -22,10 +22,25 @@ return await Deployment.RunAsync(() =>
         {"version", new DateTime().ToString("yyyyMMddHHmmss")}
     };
     
-
+    var env = new[]
+    {
+        new EnvVarArgs()  
+        {
+            Name = "Alpaca__ApiKey",
+            Value = config.RequireSecret("alpacaApiKey"),
+        },
+        new EnvVarArgs()  
+        {
+            Name = "Alpaca__ApiSecret",
+            Value = config.RequireSecret("alpacaApiSecret"),
+        },
+        new EnvVarArgs()
+        {
+            Name = "Nats__Url",
+            Value = config.Require("natsUrl"),
+        },
+    };
     
-    
-
     var webserverNs = new Namespace("webserverNs", new()
     {
         Metadata = new ObjectMetaArgs
@@ -107,6 +122,7 @@ return await Deployment.RunAsync(() =>
                                     ReadOnly = true,
                                 },
                             },
+                            Env = env
                         },
                     },
                     Volumes = new[]

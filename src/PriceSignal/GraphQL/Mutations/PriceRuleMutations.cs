@@ -130,7 +130,7 @@ public class PriceRuleMutations
         return priceRule;
     }
     
-    public async Task<PriceRule> TogglePriceRule(Guid id, AppDbContext dbContext, [Service] RuleCache ruleCache,[Service] IUser user)
+    public async Task<PriceRule> TogglePriceRule(Guid id, AppDbContext dbContext,[Service] IServiceProvider serviceProvider, [Service] RuleCache ruleCache,[Service] IUser user)
     {
         var priceRule = await dbContext.PriceRules.FirstOrDefaultAsync(pr => pr.EntityId == id && pr.UserId == user.UserIdentifier);
         if (priceRule == null)
@@ -145,6 +145,8 @@ public class PriceRuleMutations
             dbContext.PriceRules.Update(priceRule);
             await dbContext.SaveChangesAsync();
             ruleCache.AddOrUpdateRule(priceRule);
+            var binanceProcessingService = serviceProvider.GetService<BinancePriceFetcherService>();
+            binanceProcessingService?.UpdateSubscriptionsAsync();     
         } catch (Exception e)
         {
             throw new InvalidOperationException("Error enabling price rule", e);

@@ -1,11 +1,10 @@
 import { DashboardLayout } from '@/components/layouts/dashboard';
-import { AuthProvider } from '@/features/auth/components/auth-provider';
+import { PublicLayout } from '@/components/layouts/public';
 import { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 
 export const Root = () => {
   return (
-      <AuthProvider>
     <DashboardLayout>
       <Suspense
         fallback={
@@ -17,6 +16,21 @@ export const Root = () => {
         <Outlet />
       </Suspense>
     </DashboardLayout>
-    </AuthProvider>
+  );
+};
+
+export const PublicRoot = () => {
+  return (
+    <PublicLayout>
+      <Suspense
+        fallback={
+          <div className="flex size-full items-center justify-center">
+            <div className="loader">Loading...</div>
+          </div>
+        }
+      >
+        <Outlet />
+      </Suspense>
+    </PublicLayout>
   );
 };
