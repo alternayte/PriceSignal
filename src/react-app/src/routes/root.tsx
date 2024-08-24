@@ -1,9 +1,12 @@
 import { DashboardLayout } from '@/components/layouts/dashboard';
 import { PublicLayout } from '@/components/layouts/public';
+import { useAuth } from '@/features/auth/auth-context';
 import { Suspense } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 
 export const Root = () => {
+  const auth = useAuth();
+  if (!auth?.isLoggedIn && !auth?.userLoading) return <Navigate to="/" />;
   return (
     <DashboardLayout>
       <Suspense

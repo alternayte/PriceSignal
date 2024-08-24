@@ -20,7 +20,7 @@ const navItems = [
   {
     label: 'Rules',
     icon: PuzzleIcon,
-    to: '/rules',
+    to: '/dashboard/rules',
   },
   // {
   //   label: 'Wallet',

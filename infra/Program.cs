@@ -11,15 +11,17 @@ using Pulumi.Kubernetes.Types.Inputs.Meta.V1;
 using Pulumi.Kubernetes.Types.Inputs.Networking.V1;
 using Kubernetes = Pulumi.Kubernetes;
 
-return await Deployment.RunAsync(() => 
+return await Deployment.RunAsync(() =>
 {
+    var version = DateTime.Now.ToString("yyyy-MM-dd-mm-ss");
+    Console.WriteLine(version);
     var config = new Config();
     var k8sNamespace = config.Get("namespace") ?? "default";
     var numReplicas = config.GetInt32("replicas") ?? 1;
     var appLabels = new InputMap<string>
     {
         { "app", "price-signal-graph" },
-        {"version", new DateTime().ToString("yyyyMMddHHmmss")}
+        {"version", version}
     };
     
     var env = new[]

@@ -35,7 +35,7 @@ public class WebsocketClientProvider(string url, ILogger<WebsocketClientProvider
             .Where(msg => msg.MessageType == WebSocketMessageType.Text)
             .Select(msg => msg.Text ?? string.Empty)
             .Where(msg => !string.IsNullOrWhiteSpace(msg))
-            .Throttle(TimeSpan.FromMilliseconds(200))  // Throttle to one message every 200ms (5 per second)
+            .Throttle(TimeSpan.FromMilliseconds(500))  // Throttle to one message every 200ms (5 per second)
             .ObserveOn(TaskPoolScheduler.Default)
             .Subscribe(OnNext);
 

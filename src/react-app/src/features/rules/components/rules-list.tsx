@@ -81,7 +81,7 @@ export const RulesList = () => {
     }
     
     const handleViewDetail = (id:string) => {
-        navigate(`/rules/${id}`)
+        navigate(`/dashboard/rules/${id}`)
     }
 
     if (loading) return <p>Loading...</p>;

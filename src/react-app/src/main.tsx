@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
@@ -7,7 +7,6 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { AuthProvider } from './features/auth/components/auth-provider.tsx';
-import { useAuth } from './features/auth/auth-context.tsx';
 
 const httpLink = new HttpLink({
   uri: '/graphql',
@@ -51,12 +50,8 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
-    const auth = useAuth();
-    //if (!auth?.isLoggedIn) return null;
-    return (
-        <ApolloProvider client={client}>{children}</ApolloProvider>
-    );
-    }
+  return <ApolloProvider client={client}>{children}</ApolloProvider>;
+};
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

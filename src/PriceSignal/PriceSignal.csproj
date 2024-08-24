@@ -27,4 +27,24 @@
       <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\assets\content-ZoxD8Xga.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\exchanges-CPA90Iox.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\format-CoLFXwEe.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\gql-DuQWNY9l.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\index-B9H7TKqO.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\index-BQd5h2U0.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\index-DYNXUpKE.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\index.esm-CfTse56W.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\input-D6Lc3NzH.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\prices-Bcr1Efyb.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\prices-DSd-TzS0.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\rule-detail-CLH4SW6I.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\rule-toggle-DOSevjNK.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\rules-Bzlj71YY.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\settings-BTi-RbaH.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\symbol-DURTosTS.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\tabs-CNV90SHA.js" />
+    </ItemGroup>
+
 </Project>

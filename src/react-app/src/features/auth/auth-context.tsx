@@ -15,7 +15,7 @@ export interface AuthContextType {
     signinWithRedirect: (name: string) => Promise<void>;
     signout: () => Promise<void> | null;
     redirectResult: () => Promise<User | null>;
-    isLoggedIn: () => boolean;
+    isLoggedIn: boolean;
     // sendPasswordResetEmail: (email: string) => Promise<void>
     // confirmPasswordReset: (password: string, code: string) => Promise<void>
     // updatePassword: (password: string) => Promise<void>
