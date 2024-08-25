@@ -5,6 +5,7 @@ using Domain.Models.Instruments;
 using Domain.Models.NotificationChannel;
 using Domain.Models.PriceRule;
 using Domain.Models.User;
+using Domain.Models.Waitlist;
 using Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.NameTranslation;
@@ -18,6 +19,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Exchange> Exchanges => Set<Exchange>();
     public DbSet<Instrument> Instruments => Set<Instrument>();
     public DbSet<PriceRule> PriceRules => Set<PriceRule>();
+    public DbSet<Waitlist> Waitlists => Set<Waitlist>();
     public DbSet<PriceRuleTriggerLog> PriceRuleTriggerLogs => Set<PriceRuleTriggerLog>();
     public DbSet<PriceCondition> PriceConditions => Set<PriceCondition>();
     public DbSet<InstrumentPrice> InstrumentPrices => Set<InstrumentPrice>();

@@ -5,6 +5,7 @@ using Application.Price;
 using Application.Rules.Common;
 using Domain.Models.NotificationChannel;
 using Domain.Models.User;
+using Domain.Models.Waitlist;
 using HotChocolate.Types.Pagination;
 using Infrastructure;
 using Infrastructure.Data;
@@ -26,7 +27,7 @@ try
     {
         options.AddDefaultPolicy(policy =>
         {
-            policy.WithOrigins("http://localhost:5173","http://localhost:5125") // Adjust the port if necessary
+            policy.WithOrigins("http://localhost:5173", "http://localhost:5125") // Adjust the port if necessary
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
@@ -186,16 +187,29 @@ try
         });
         return Task.FromResult(Results.Ok());
     });
-    g.MapPost("/logout", async (HttpResponse response) =>
+    g.MapPost("/logout", (HttpResponse response) =>
     {
         response.Cookies.Delete("access_token");
+        return Task.FromResult(Results.Ok());
+    });
+    g.MapPost("/waitlist", async (string email, IAppDbContext dbContext) =>
+    {
+        var waitlist = new Waitlist
+        {
+            Email = email
+        };
+        try
+        {
+            await dbContext.Waitlists.AddAsync(waitlist);
+            await dbContext.SaveChangesAsync();            
+        }
+        catch
+        {
+            // ignored
+        }
+
         return Results.Ok();
     });
-// g.MapPost("/message", async (Messageinput message, IPubSub pubsub) =>
-// {
-//     await pubsub.PublishAsync("notifications.test", message);
-//     return Results.Ok();
-// });
 
     var natsService = app.Services.GetRequiredService<IPubSub>();
 
@@ -226,14 +240,13 @@ try
     }, "notifications.init.telegram");
 
     app.Run();
-
-
 }
 catch (Exception e)
 {
     Console.WriteLine(e);
     throw;
 }
+
 record Messageinput(Int64 Chat_Id, string Message);
 
 record TelegramInit(Int64 Chat_Id, string Username, string User_Id);
